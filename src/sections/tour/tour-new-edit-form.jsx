@@ -262,7 +262,7 @@ export function TourNewEditForm({ currentTour }) {
   );
 
   const renderActions = (
-    <Stack direction="row" alignItems="center" flexWrap="wrap">
+    <Stack direction="row" alignItems="center" justifyContent="flex-end" flexWrap="wrap">
       <LoadingButton
         type="submit"
         variant="contained"
