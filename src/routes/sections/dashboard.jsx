@@ -64,7 +64,7 @@ const KanbanPage = lazy(() => import('src/pages/dashboard/kanban'));
 const PermissionDeniedPage = lazy(() => import('src/pages/dashboard/permission'));
 // Blank page
 const ParamsPage = lazy(() => import('src/pages/dashboard/params'));
-const BlankPage = lazy(() => import('src/pages/dashboard/blank'));
+const AddFilters = lazy(() => import('src/pages/dashboard/addfilters'));
 
 // ----------------------------------------------------------------------
 
@@ -165,7 +165,7 @@ export const dashboardRoutes = [
       { path: 'kanban', element: <KanbanPage /> },
       { path: 'permission', element: <PermissionDeniedPage /> },
       { path: 'params', element: <ParamsPage /> },
-      { path: 'blank', element: <BlankPage /> },
+      { path: 'addfilters', element: <AddFilters /> },
     ],
   },
 ];

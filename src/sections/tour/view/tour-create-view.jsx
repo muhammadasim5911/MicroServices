@@ -12,11 +12,11 @@ export function TourCreateView() {
   return (
     <DashboardContent>
       <CustomBreadcrumbs
-        heading="Create a new tour"
+        heading="Create a new filter"
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
-          { name: 'Tour', href: paths.dashboard.tour.root },
-          { name: 'New tour' },
+          // { name: 'Tour', href: paths.dashboard.tour.root },
+          { name: 'New filter' },
         ]}
         sx={{ mb: { xs: 3, md: 5 } }}
       />

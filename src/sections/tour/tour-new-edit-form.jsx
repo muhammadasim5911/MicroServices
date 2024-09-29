@@ -1,96 +1,94 @@
 import { z as zod } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMemo, useEffect, useCallback } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 
 import Chip from '@mui/material/Chip';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
-import Avatar from '@mui/material/Avatar';
-import Switch from '@mui/material/Switch';
-import Divider from '@mui/material/Divider';
-import CardHeader from '@mui/material/CardHeader';
 import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
-import FormControlLabel from '@mui/material/FormControlLabel';
-
-import { paths } from 'src/routes/paths';
-import { useRouter } from 'src/routes/hooks';
-
-import { fIsAfter } from 'src/utils/format-time';
-
-import { _tags, _tourGuides, TOUR_SERVICE_OPTIONS } from 'src/_mock';
-
 import { toast } from 'src/components/snackbar';
-import { Form, Field, schemaHelper } from 'src/components/hook-form';
+import { Form, Field } from 'src/components/hook-form';
+import { filterKeys, filterOptions } from 'src/_mock/_filters';
+import { TOUR_SERVICE_OPTIONS } from 'src/_mock';
+import { Checkbox } from '@mui/material';
+import axios from 'axios';
 
-// ----------------------------------------------------------------------
-
+// Define your schema with optional filterKey
 export const NewTourSchema = zod
   .object({
-    name: zod.string().min(1, { message: 'Name is required!' }),
-    content: schemaHelper.editor({
-      message: { required_error: 'Content is required!' },
-    }),
-    images: schemaHelper.files({
-      message: { required_error: 'Images is required!' },
-    }),
-    tourGuides: zod
-      .array(
-        zod.object({
-          id: zod.string(),
-          name: zod.string(),
-          avatarUrl: zod.string(),
-          phoneNumber: zod.string(),
-        })
-      )
-      .nonempty({ message: 'Must have at least 1 guide!' }),
-    available: zod.object({
-      startDate: schemaHelper.date({
-        message: { required_error: 'Start date is required!' },
-      }),
-      endDate: schemaHelper.date({
-        message: { required_error: 'End date is required!' },
-      }),
-    }),
-    durations: zod.string().min(1, { message: 'Durations is required!' }),
-    destination: schemaHelper.objectOrNull({
-      message: { required_error: 'Destination is required!' },
-    }),
-    services: zod.string().array().min(2, { message: 'Must have at least 2 items!' }),
-    tags: zod.string().array().min(2, { message: 'Must have at least 2 items!' }),
+    label: zod.string().min(1, { message: 'Label is required!' }),
+    filterType: zod.string().min(1, { message: 'Filter type is required!' }),
+    filterKey: zod.string().optional(), // Make filterKey optional
+    minvalue: zod.string().optional(), // Make filterKey optional
+    maxvalue: zod.string().optional(), // Make filterKey optional
+
+    values: zod.string().array().optional(),
   })
-  .refine((data) => !fIsAfter(data.available.startDate, data.available.endDate), {
-    message: 'End date cannot be earlier than start date!',
-    path: ['available.endDate'],
+  .superRefine((data, ctx) => {
+    const { filterType, filterKey, minvalue, maxvalue, values } = data;
+    if (filterKey && !values.length) {
+      ctx.addIssue({
+        path: ['values'], // Path to the issue
+        code: zod.ZodIssueCode.custom,
+        message: 'Must have at least 1 item!',
+      });
+    }
+    if (
+      (filterType === 'Radio Buttons' ||
+        filterType === 'DropDown' ||
+        filterType === 'Check Boxes') &&
+      !filterKey
+    ) {
+      ctx.addIssue({
+        path: ['filterKey'], // Path to the issue
+        code: zod.ZodIssueCode.custom,
+        message: 'Filter key is required when filter type is radio, dropdown, or checkbox!',
+      });
+    } else if (filterType === 'Range Slider' && !minvalue) {
+      ctx.addIssue({
+        path: ['minvalue'], // Path to the issue
+        code: zod.ZodIssueCode.custom,
+        message: 'Min value is required',
+      });
+    } else if (filterType === 'Range Slider' && !maxvalue) {
+      ctx.addIssue({
+        path: ['maxvalue'], // Path to the issue
+        code: zod.ZodIssueCode.custom,
+        message: 'max value is required',
+      });
+    }
+
+    if (filterType === 'Range Slider' && minvalue && maxvalue) {
+      const min = parseFloat(minvalue);
+      const max = parseFloat(maxvalue);
+
+      if (!isNaN(min) && !isNaN(max) && min >= max) {
+        ctx.addIssue({
+          path: ['minvalue'], // Indicate that the issue is with the minvalue
+          code: zod.ZodIssueCode.custom,
+          message: 'Min value should be smaller than max value',
+        });
+      }
+    }
   });
 
 export function TourNewEditForm({ currentTour }) {
-  const router = useRouter();
-
   const defaultValues = useMemo(
     () => ({
-      name: currentTour?.name || '',
-      content: currentTour?.content || '',
-      images: currentTour?.images || [],
-      tourGuides: currentTour?.tourGuides || [],
-      available: {
-        startDate: currentTour?.available.startDate || null,
-        endDate: currentTour?.available.endDate || null,
-      },
-      durations: currentTour?.durations || '',
-      destination: currentTour?.destination || '',
-      services: currentTour?.services || [],
-      tags: currentTour?.tags || [],
+      values: currentTour?.values || [],
     }),
     [currentTour]
   );
 
   const methods = useForm({
     mode: 'all',
-    resolver: zodResolver(NewTourSchema),
     defaultValues,
+    resolver: zodResolver(NewTourSchema),
   });
+
+  const [valuesData, setValuesData] = useState([]);
 
   const {
     watch,
@@ -109,95 +107,59 @@ export function TourNewEditForm({ currentTour }) {
   }, [currentTour, defaultValues, reset]);
 
   const onSubmit = handleSubmit(async (data) => {
+    console.log('🚀 ~ onSubmit ~ data:', data);
+
+    const url = 'https://66f4701877b5e889709983c0.mockapi.io/api/v1/filterkey'; // Replace with your API endpoint
+
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      reset();
-      toast.success(currentTour ? 'Update success!' : 'Create success!');
-      router.push(paths.dashboard.tour.root);
-      console.info('DATA', data);
+      const response = await axios.post(url, data, {
+        headers: {
+          'Content-Type': 'application/json', // Specify the content type
+        },
+      });
+
+      console.log('Success:', response.data);
+      toast.success('Create success!');
+
+      reset({
+        filterKey: '',
+        filterType: '',
+        label: '',
+        minvalue: '',
+        maxvalue: '',
+        values: [],
+      }); // Resets the form fields to default values
     } catch (error) {
-      console.error(error);
+      console.error('Error:', error);
+      toast.error('Something went wrong!');
     }
   });
 
-  const handleRemoveFile = useCallback(
-    (inputFile) => {
-      const filtered = values.images && values.images?.filter((file) => file !== inputFile);
-      setValue('images', filtered, { shouldValidate: true });
-    },
-    [setValue, values.images]
-  );
-
-  const handleRemoveAllFiles = useCallback(() => {
-    setValue('images', [], { shouldValidate: true });
-  }, [setValue]);
-
   const renderDetails = (
     <Card>
-      <CardHeader title="Details" subheader="Title, short description, image..." sx={{ mb: 3 }} />
-
-      <Divider />
-
       <Stack spacing={3} sx={{ p: 3 }}>
         <Stack spacing={1.5}>
-          <Typography variant="subtitle2">Name</Typography>
-          <Field.Text name="name" placeholder="Ex: Adventure Seekers Expedition..." />
+          <Typography variant="subtitle2">Label</Typography>
+          <Field.Text name="label" placeholder="Write down label for filter" />
         </Stack>
-
-        <Stack spacing={1.5}>
-          <Typography variant="subtitle2">Content</Typography>
-          <Field.Editor name="content" sx={{ maxHeight: 480 }} />
-        </Stack>
-
-        <Stack spacing={1.5}>
-          <Typography variant="subtitle2">Images</Typography>
-          <Field.Upload
-            multiple
-            thumbnail
-            name="images"
-            maxSize={3145728}
-            onRemove={handleRemoveFile}
-            onRemoveAll={handleRemoveAllFiles}
-            onUpload={() => console.info('ON UPLOAD')}
-          />
-        </Stack>
-      </Stack>
-    </Card>
-  );
-
-  const renderProperties = (
-    <Card>
-      <CardHeader
-        title="Properties"
-        subheader="Additional functions and attributes..."
-        sx={{ mb: 3 }}
-      />
-
-      <Divider />
-
-      <Stack spacing={3} sx={{ p: 3 }}>
         <div>
           <Typography variant="subtitle2" sx={{ mb: 1.5 }}>
-            Tour guide
+            Filter type
           </Typography>
-
           <Field.Autocomplete
-            multiple
-            name="tourGuides"
-            placeholder="+ Tour Guides"
-            disableCloseOnSelect
-            options={_tourGuides}
-            getOptionLabel={(option) => option.name}
-            isOptionEqualToValue={(option, value) => option.id === value.id}
+            value={values.filterType}
+            onChange={(event, newValue) => {
+              setValue('filterType', newValue.name);
+              setValue('filterKey', undefined);
+              setValue('values', []);
+            }}
+            name="filterType"
+            placeholder="Select filter type"
+            options={filterOptions}
+            getOptionLabel={(option) => option.name || ''}
+            isOptionEqualToValue={(option, value) => option.name === value}
             renderOption={(props, tourGuide) => (
               <li {...props} key={tourGuide.id}>
-                <Avatar
-                  key={tourGuide.id}
-                  alt={tourGuide.avatarUrl}
-                  src={tourGuide.avatarUrl}
-                  sx={{ mr: 1, width: 24, height: 24, flexShrink: 0 }}
-                />
-
                 {tourGuide.name}
               </li>
             )}
@@ -209,81 +171,98 @@ export function TourNewEditForm({ currentTour }) {
                   size="small"
                   variant="soft"
                   label={tourGuide.name}
-                  avatar={<Avatar alt={tourGuide.name} src={tourGuide.avatarUrl} />}
                 />
               ))
             }
           />
         </div>
-
-        <Stack spacing={1.5}>
-          <Typography variant="subtitle2">Available</Typography>
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-            <Field.DatePicker name="available.startDate" label="Start date" />
-            <Field.DatePicker name="available.endDate" label="End date" />
+        {values.filterType == 'Range Slider' && (
+          <Stack direction="row" spacing={3}>
+            <Stack spacing={1.5} flex={1}>
+              <Typography variant="subtitle2">Min value</Typography>
+              <Field.Text
+                name="minvalue"
+                placeholder="Enter min value"
+                onKeyPress={(event) => {
+                  // Prevent non-numeric input
+                  if (!/^[0-9]*$/.test(event.key)) {
+                    event.preventDefault();
+                  }
+                }}
+              />
+            </Stack>
+            <Stack spacing={1.5} flex={1}>
+              <Typography variant="subtitle2">Max value</Typography>
+              <Field.Text
+                onKeyPress={(event) => {
+                  // Prevent non-numeric input
+                  if (!/^[0-9]*$/.test(event.key)) {
+                    event.preventDefault();
+                  }
+                }}
+                name="maxvalue"
+                placeholder="Enter max value"
+              />
+            </Stack>
           </Stack>
-        </Stack>
+        )}
+        {/* Conditionally render filterKey based on filterType */}
+        {(values.filterType === 'Radio Buttons' ||
+          values.filterType === 'DropDown' ||
+          values.filterType === 'Check Boxes') && (
+          <div>
+            <Typography variant="subtitle2" sx={{ mb: 1.5 }}>
+              Filter key
+            </Typography>
+            <Field.Autocomplete
+              onChange={(event, newValue) => {
+                setValue('filterKey', newValue.name);
+                setValue('values', []);
 
-        <Stack spacing={1.5}>
-          <Typography variant="subtitle2">Duration</Typography>
-          <Field.Text name="durations" placeholder="Ex: 2 days, 4 days 3 nights..." />
-        </Stack>
+                setValuesData(newValue.data);
+              }}
+              name="filterKey"
+              placeholder="Select filter key"
+              options={filterKeys}
+              getOptionLabel={(option) => option.name || ''}
+              isOptionEqualToValue={(option, value) => option.name === value}
+              renderOption={(props, tourGuide) => (
+                <li {...props} key={tourGuide.id}>
+                  {tourGuide.name}
+                </li>
+              )}
+              renderTags={(selected, getTagProps) =>
+                selected.map((tourGuide, index) => (
+                  <Chip
+                    {...getTagProps({ index })}
+                    key={tourGuide.id}
+                    size="small"
+                    variant="soft"
+                    label={tourGuide.name}
+                  />
+                ))
+              }
+            />
+          </div>
+        )}
 
-        <Stack spacing={1.5}>
-          <Typography variant="subtitle2">Destination</Typography>
-          <Field.CountrySelect fullWidth name="destination" placeholder="+ Destination" />
-        </Stack>
+        {values?.filterKey ? (
+          <Stack spacing={1}>
+            <Typography variant="subtitle2">Values</Typography>
 
-        <Stack spacing={1}>
-          <Typography variant="subtitle2">Services</Typography>
-          <Field.MultiCheckbox
-            name="services"
-            options={TOUR_SERVICE_OPTIONS}
-            sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)' }}
-          />
-        </Stack>
-
-        <Stack spacing={1.5}>
-          <Typography variant="subtitle2">Tags</Typography>
-          <Field.Autocomplete
-            name="tags"
-            placeholder="+ Tags"
-            multiple
-            freeSolo
-            disableCloseOnSelect
-            options={_tags.map((option) => option)}
-            getOptionLabel={(option) => option}
-            renderOption={(props, option) => (
-              <li {...props} key={option}>
-                {option}
-              </li>
-            )}
-            renderTags={(selected, getTagProps) =>
-              selected.map((option, index) => (
-                <Chip
-                  {...getTagProps({ index })}
-                  key={option}
-                  label={option}
-                  size="small"
-                  color="info"
-                  variant="soft"
-                />
-              ))
-            }
-          />
-        </Stack>
+            <Field.MultiCheckbox
+              name="values"
+              options={valuesData}
+              sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)' }}
+            />
+          </Stack>
+        ) : null}
       </Stack>
     </Card>
   );
 
   const renderActions = (
     <Stack direction="row" alignItems="center" flexWrap="wrap">
-      <FormControlLabel
-        control={<Switch defaultChecked inputProps={{ id: 'publish-switch' }} />}
-        label="Publish"
-        sx={{ flexGrow: 1, pl: 3 }}
-      />
-
       <LoadingButton
         type="submit"
         variant="contained"
@@ -291,7 +270,7 @@ export function TourNewEditForm({ currentTour }) {
         loading={isSubmitting}
         sx={{ ml: 2 }}
       >
-        {!currentTour ? 'Create tour' : 'Save changes'}
+        {!currentTour ? 'Create filter' : 'Save changes'}
       </LoadingButton>
     </Stack>
   );
@@ -300,9 +279,6 @@ export function TourNewEditForm({ currentTour }) {
     <Form methods={methods} onSubmit={onSubmit}>
       <Stack spacing={{ xs: 3, md: 5 }} sx={{ mx: 'auto', maxWidth: { xs: 720, xl: 880 } }}>
         {renderDetails}
-
-        {renderProperties}
-
         {renderActions}
       </Stack>
     </Form>

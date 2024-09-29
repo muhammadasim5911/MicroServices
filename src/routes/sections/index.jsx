@@ -13,7 +13,7 @@ import { componentsRoutes } from './components';
 
 // ----------------------------------------------------------------------
 
-const HomePage = lazy(() => import('src/pages/home'));
+const HomePage = lazy(() => import('src/routes/sections/auth'));
 
 export function Router() {
   return useRoutes([
@@ -23,11 +23,8 @@ export function Router() {
        * Skip home page
        * element: <Navigate to={CONFIG.auth.redirectPath} replace />,
        */
-      element: (
-        <Suspense fallback={<SplashScreen />}>
-          <MainLayout>{/* <HomePage /> */}</MainLayout>
-        </Suspense>
-      ),
+      // element: <HomePage />,
+      element: <Navigate to={'/auth/jwt/sign-in'} replace />,
     },
 
     // Auth

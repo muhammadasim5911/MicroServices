@@ -6,7 +6,7 @@ import { TourCreateView } from 'src/sections/tour/view';
 
 // ----------------------------------------------------------------------
 
-const metadata = { title: `Create a new tour | Dashboard - ${CONFIG.appName}` };
+const metadata = { title: `Create a new filter | Dashboard - ${CONFIG.appName}` };
 
 export default function Page() {
   return (
