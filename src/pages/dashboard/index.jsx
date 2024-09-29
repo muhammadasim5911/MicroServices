@@ -251,14 +251,14 @@ export default function OverviewAppPage() {
                     let valuestoSend = [
                       ...selectedGroups,
                       {
-                        fieldType: 'dropdown',
+                        fieldType: 'DropDown',
                         values: formValues.dropdown,
                       },
                     ];
 
                     setSelectedGroups(valuestoSend);
                     toast.success('Added successfully!');
-                    setValue('dropdown', null);
+                    setValue('dropdown', '');
                   }}
                   variant="outlined"
                   size="small"
@@ -413,7 +413,7 @@ export default function OverviewAppPage() {
       <Stack spacing={3} sx={{ p: 3 }}>
         {selectedGroups.map((item) => (
           <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Typography width={'5%'} variant="subtitle2" alignSelf="center">
+            <Typography width={'20%'} variant="subtitle2" alignSelf="center">
               {item.values}
             </Typography>
 
