@@ -25,17 +25,23 @@ import { Field, Form } from 'src/components/hook-form';
 
 import { CONFIG } from 'src/config-global';
 import { z as zod } from 'zod';
+import { toast } from 'src/components/snackbar';
 
 import { OverviewAppView } from 'src/sections/overview/app/view';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LoadingButton } from '@mui/lab';
+import { label } from 'yet-another-react-lightbox';
 
 // ----------------------------------------------------------------------
 
 const metadata = { title: `Dashboard - ${CONFIG.appName}` };
 export const NewTourSchema = zod.object({
-  label: zod.string().min(1, { message: 'Label is required!' }),
-  dropdown: zod.string().min(1, { message: 'please select dropdown!' }),
+  label: zod.string().optional(),
+  subject: zod.string().min(1, { message: 'Subject is required!' }),
+  body: zod.string().min(1, { message: 'Body is required!' }),
+
+  dropdown: zod.string().optional(),
+  channel: zod.string().array().min(1, { message: 'Please select atleast one channel!' }),
 
   values: zod.string().array().optional(),
 });
@@ -50,6 +56,9 @@ export default function OverviewAppPage() {
   const defaultValues = useMemo(
     () => ({
       values: [],
+      channel: [],
+      label: '',
+      dropdown: '',
     }),
     []
   );
@@ -107,6 +116,7 @@ export default function OverviewAppPage() {
               ];
 
               setSelectedGroups(valuestoSend);
+              toast.success('Added successfully!');
             }}
             variant="outlined"
             size="small"
@@ -127,6 +137,10 @@ export default function OverviewAppPage() {
       </Box>
     );
   };
+
+  const onSubmit = handleSubmit(async (data) => {
+    console.log('🚀 ~ onSubmit ~ data:', data);
+  });
   const renderDynamicField = (item) => {
     switch (item?.filterType) {
       case 'Input':
@@ -137,6 +151,10 @@ export default function OverviewAppPage() {
                 <Typography variant="subtitle2">{item.label}</Typography>
                 <LoadingButton
                   onClick={() => {
+                    if (!formValues.label) {
+                      toast.error('Please write something first to add!');
+                      return;
+                    }
                     let valuestoSend = [
                       ...selectedGroups,
                       {
@@ -146,8 +164,10 @@ export default function OverviewAppPage() {
                     ];
 
                     setSelectedGroups(valuestoSend);
+                    toast.success('Added successfully!');
+
+                    setValue('label', '');
                   }}
-                  onSubmit={() => {}}
                   variant="outlined"
                   size="small"
                   sx={{ ml: 2 }}
@@ -172,6 +192,10 @@ export default function OverviewAppPage() {
                 <Typography variant="subtitle2">{item.label}</Typography>
                 <LoadingButton
                   onClick={() => {
+                    if (!selected) {
+                      toast.error('Please select atleast one option!');
+                      return;
+                    }
                     let valuestoSend = [
                       ...selectedGroups,
                       {
@@ -181,6 +205,8 @@ export default function OverviewAppPage() {
                     ];
 
                     setSelectedGroups(valuestoSend);
+                    toast.success('Added successfully!');
+                    setSelected(null);
                   }}
                   variant="outlined"
                   size="small"
@@ -218,7 +244,10 @@ export default function OverviewAppPage() {
                 <Typography variant="subtitle2">{item.label}</Typography>
                 <LoadingButton
                   onClick={() => {
-                    console.log('valuess', formValues);
+                    if (!formValues.dropdown) {
+                      toast.error('Please select an option!');
+                      return;
+                    }
                     let valuestoSend = [
                       ...selectedGroups,
                       {
@@ -228,6 +257,8 @@ export default function OverviewAppPage() {
                     ];
 
                     setSelectedGroups(valuestoSend);
+                    toast.success('Added successfully!');
+                    setValue('dropdown', null);
                   }}
                   variant="outlined"
                   size="small"
@@ -241,6 +272,7 @@ export default function OverviewAppPage() {
                   setValue('dropdown', newValue);
                 }}
                 name="dropdown"
+                value={formValues.dropdown}
                 placeholder="Select a value"
                 options={item.values}
                 getOptionLabel={(option) => option || ''}
@@ -274,6 +306,10 @@ export default function OverviewAppPage() {
                   <Typography variant="subtitle2">{item.label}</Typography>
                   <LoadingButton
                     onClick={() => {
+                      if (!formValues.values || formValues.values.length === 0) {
+                        toast.error('Please select an option!');
+                        return;
+                      }
                       let valuestoSend = [
                         ...selectedGroups,
                         {
@@ -283,6 +319,9 @@ export default function OverviewAppPage() {
                       ];
 
                       setSelectedGroups(valuestoSend);
+
+                      toast.success('Added successfully!');
+                      setValue('values', []);
                     }}
                     variant="outlined"
                     size="small"
@@ -318,15 +357,33 @@ export default function OverviewAppPage() {
     }
   };
   const renderActions = (
-    <Stack direction="row" alignItems="center" flexWrap="wrap">
+    // <Stack direction="row" alignItems="center" flexWrap="wrap">
+    //   <LoadingButton
+    //     // type="submit"
+    //     onClick={onSubmit}
+    //     variant="contained"
+    //     size="large"
+    //     //  loading={isSubmitting}
+    //     sx={{ ml: 2 }}
+    //   >
+    //     {'Save changes'}
+    //   </LoadingButton>
+    // </Stack>
+    <Stack
+      marginBottom={'10%'}
+      direction="row"
+      alignItems="center"
+      justifyContent="flex-end"
+      flexWrap="wrap"
+    >
       <LoadingButton
+        onClick={onSubmit}
         type="submit"
         variant="contained"
         size="large"
-        //  loading={isSubmitting}
         sx={{ ml: 2 }}
       >
-        {'Save changes'}
+        Confirm Send
       </LoadingButton>
     </Stack>
   );
@@ -356,9 +413,13 @@ export default function OverviewAppPage() {
       <Stack spacing={3} sx={{ p: 3 }}>
         {selectedGroups.map((item) => (
           <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="subtitle2">{item.values}</Typography>
+            <Typography width={'5%'} variant="subtitle2" alignSelf="center">
+              {item.values}
+            </Typography>
 
-            <Typography variant="subtitle2">{item.fieldType}</Typography>
+            <Typography variant="subtitle2" alignSelf="center">
+              {item.fieldType}
+            </Typography>
             <LoadingButton
               onClick={() => {
                 const index = selectedGroups.findIndex((res) => res === item);
@@ -388,24 +449,39 @@ export default function OverviewAppPage() {
 
       <Divider />
       <Stack spacing={3} sx={{ p: 3 }}>
-        <Box>
-          <Grid container spacing={2}>
-            {['Email', 'Whatsapp', 'Push', 'Sms', 'In app'].map((option, index) => (
-              <Grid item xs={4} key={option}>
-                <FormControlLabel
-                  control={
-                    <Radio
-                      checked={option === selectedChannel}
-                      onClick={() => setSelectedChannel(option)}
-                    />
-                  }
-                  label={option}
-                  sx={{ ...(option === 'all' && { textTransform: 'capitalize' }) }}
-                />
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
+        <Field.MultiCheckbox
+          name="channel"
+          options={['Email', 'Whatsapp', 'Push Notification', 'SMS', 'In app messages'].map(
+            (value) => ({
+              label: value, // The display label
+              value: value, // The actual value
+            })
+          )}
+          sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}
+        />
+      </Stack>
+    </Card>
+  );
+  const renderSubject = (
+    <Card>
+      <CardHeader
+        title="Enter content"
+        subheader="This will be sent to selected group of users"
+        sx={{ mb: 3 }}
+      />
+
+      <Divider />
+      <Stack spacing={2} sx={{ p: 3 }}>
+        <Typography variant="subtitle2">Subject</Typography>
+        <Field.Text name="subject" placeholder={'Write subject here...'} />
+        <Typography variant="subtitle2">Body</Typography>
+        <Field.Text
+          name="body"
+          placeholder="Write subject here..."
+          multiline
+          rows={4} // Number of initial rows
+          sx={{ width: '100%' }} // Initial width
+        />
       </Stack>
     </Card>
   );
@@ -415,8 +491,8 @@ export default function OverviewAppPage() {
         {renderDetails}
         {selectedGroups.length ? rendergroups : null}
         {renderChannels}
-
-        {/* {renderActions} */}
+        {renderSubject}
+        {renderActions}
       </Stack>
     </Form>
   );
