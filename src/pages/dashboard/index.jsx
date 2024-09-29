@@ -488,7 +488,7 @@ export default function OverviewAppPage() {
   return (
     <Form methods={methods} onSubmit={() => {}}>
       <Stack spacing={{ xs: 3, md: 5 }} sx={{ mx: 'auto', maxWidth: { xs: 720, xl: 880 } }}>
-        {renderDetails}
+        {filters.length ? renderDetails : null}
         {selectedGroups.length ? rendergroups : null}
         {renderChannels}
         {renderSubject}
