@@ -20,7 +20,7 @@ export const filterKeys = [
       {
         id: 2,
         label: 'inActive',
-        value: 'inActive',
+        value: 'inActive ',
       },
       {
         id: 3,
