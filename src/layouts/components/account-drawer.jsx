@@ -21,7 +21,7 @@ import { Iconify } from 'src/components/iconify';
 import { Scrollbar } from 'src/components/scrollbar';
 import { AnimateAvatar } from 'src/components/animate';
 
-import { useMockedUser } from 'src/auth/hooks';
+import { useAuthContext, useMockedUser } from 'src/auth/hooks';
 
 import { UpgradeBlock } from './nav-upgrade';
 import { AccountButton } from './account-button';
@@ -31,12 +31,14 @@ import { SignOutButton } from './sign-out-button';
 
 export function AccountDrawer({ data = [], sx, ...other }) {
   const theme = useTheme();
+  const { user } = useAuthContext();
+  console.log('🚀 ~ AccountDrawer ~ user:', user);
 
   const router = useRouter();
 
   const pathname = usePathname();
 
-  const { user } = useMockedUser();
+  // const { user } = useMockedUser();
 
   const [open, setOpen] = useState(false);
 
@@ -60,7 +62,7 @@ export function AccountDrawer({ data = [], sx, ...other }) {
     <AnimateAvatar
       width={96}
       slotProps={{
-        avatar: { src: user?.photoURL, alt: user?.displayName },
+        avatar: { src: user?.photoURL, alt: `${user?.firstName} ${user?.lastName}` },
         overlay: {
           border: 2,
           spacing: 3,
@@ -68,7 +70,7 @@ export function AccountDrawer({ data = [], sx, ...other }) {
         },
       }}
     >
-      {user?.displayName?.charAt(0).toUpperCase()}
+      {`${user?.firstName} ${user?.lastName}`?.charAt(0).toUpperCase()}
     </AnimateAvatar>
   );
 
@@ -101,15 +103,15 @@ export function AccountDrawer({ data = [], sx, ...other }) {
             {renderAvatar}
 
             <Typography variant="subtitle1" noWrap sx={{ mt: 2 }}>
-              {user?.displayName}
+              {`${user?.firstName} ${user?.lastName}`}
             </Typography>
 
             <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.5 }} noWrap>
-              {user?.email}
+              {user?.emailAddress}
             </Typography>
           </Stack>
 
-          <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="center" sx={{ p: 3 }}>
+          {/* <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="center" sx={{ p: 3 }}>
             {[...Array(3)].map((_, index) => (
               <Tooltip
                 key={_mock.fullName(index + 1)}
@@ -133,7 +135,7 @@ export function AccountDrawer({ data = [], sx, ...other }) {
                 <Iconify icon="mingcute:add-line" />
               </IconButton>
             </Tooltip>
-          </Stack>
+          </Stack> */}
 
           <Stack
             sx={{
@@ -174,10 +176,10 @@ export function AccountDrawer({ data = [], sx, ...other }) {
               );
             })}
           </Stack>
-
+          {/* 
           <Box sx={{ px: 2.5, py: 3 }}>
             <UpgradeBlock />
-          </Box>
+          </Box> */}
         </Scrollbar>
 
         <Box sx={{ p: 2.5 }}>

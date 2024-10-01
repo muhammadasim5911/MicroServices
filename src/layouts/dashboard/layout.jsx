@@ -30,11 +30,14 @@ import { ContactsPopover } from '../components/contacts-popover';
 import { WorkspacesPopover } from '../components/workspaces-popover';
 import { navData as dashboardNavData } from '../config-nav-dashboard';
 import { NotificationsDrawer } from '../components/notifications-drawer';
+import { useAuthContext } from 'src/auth/hooks';
 
 // ----------------------------------------------------------------------
 
 export function DashboardLayout({ sx, children, header, data }) {
   const theme = useTheme();
+  const { user } = useAuthContext();
+  console.log('🚀 ~ DashboardLayout ~ user:', user);
 
   const mobileNavOpen = useBoolean();
 
@@ -132,7 +135,7 @@ export function DashboardLayout({ sx, children, header, data }) {
                 )}
                 {/* -- Workspace popover -- */}
                 <WorkspacesPopover
-                  data={_workspaces}
+                  data={user?.company}
                   sx={{ color: 'var(--layout-nav-text-primary-color)' }}
                 />
               </>

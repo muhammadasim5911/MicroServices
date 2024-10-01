@@ -26,18 +26,29 @@ import { SignUpTerms } from '../../components/sign-up-terms';
 
 // ----------------------------------------------------------------------
 
-export const SignUpSchema = zod.object({
-  firstName: zod.string().min(1, { message: 'First name is required!' }),
-  lastName: zod.string().min(1, { message: 'Last name is required!' }),
-  email: zod
-    .string()
-    .min(1, { message: 'Email is required!' })
-    .email({ message: 'Email must be a valid email address!' }),
-  password: zod
-    .string()
-    .min(1, { message: 'Password is required!' })
-    .min(6, { message: 'Password must be at least 6 characters!' }),
-});
+export const SignUpSchema = zod
+  .object({
+    firstName: zod.string().min(1, { message: 'First name is required!' }),
+    lastName: zod.string().min(1, { message: 'Last name is required!' }),
+    company: zod.string().min(1, { message: 'company name is required!' }),
+
+    emailAddress: zod
+      .string()
+      .min(1, { message: 'Email is required!' })
+      .email({ message: 'Email must be a valid email address!' }),
+    password: zod
+      .string()
+      .min(1, { message: 'Password is required!' })
+      .min(6, { message: 'Password must be at least 6 characters!' }),
+    confirmPassword: zod
+      .string()
+      .min(1, { message: 'Password is required!' })
+      .min(6, { message: 'Password must be at least 6 characters!' }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match!",
+    path: ['confirmPassword'], // This specifies where the error should be shown
+  });
 
 // ----------------------------------------------------------------------
 
@@ -47,14 +58,16 @@ export function JwtSignUpView() {
   const router = useRouter();
 
   const password = useBoolean();
+  const confirmPassword = useBoolean();
 
   const [errorMsg, setErrorMsg] = useState('');
 
   const defaultValues = {
-    firstName: 'Hello',
-    lastName: 'Friend',
-    email: 'hello@gmail.com',
-    password: '@demo1',
+    firstName: '',
+    lastName: '',
+    emailAddress: '',
+    password: '',
+    company: '',
   };
 
   const methods = useForm({
@@ -70,10 +83,11 @@ export function JwtSignUpView() {
   const onSubmit = handleSubmit(async (data) => {
     try {
       await signUp({
-        email: data.email,
+        emailAddress: data.emailAddress,
         password: data.password,
         firstName: data.firstName,
         lastName: data.lastName,
+        company: data.company,
       });
       await checkUserSession?.();
 
@@ -91,7 +105,8 @@ export function JwtSignUpView() {
         <Field.Text name="lastName" label="Last name" InputLabelProps={{ shrink: true }} />
       </Box>
 
-      <Field.Text name="email" label="Email address" InputLabelProps={{ shrink: true }} />
+      <Field.Text name="emailAddress" label="Email address" InputLabelProps={{ shrink: true }} />
+      <Field.Text name="company" label="Company name" InputLabelProps={{ shrink: true }} />
 
       <Field.Text
         name="password"
@@ -109,7 +124,24 @@ export function JwtSignUpView() {
           ),
         }}
       />
-
+      <Field.Text
+        name="confirmPassword"
+        label="Confirm Password"
+        placeholder="6+ characters"
+        type={confirmPassword.value ? 'text' : 'password'}
+        InputLabelProps={{ shrink: true }}
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton onClick={confirmPassword.onToggle} edge="end">
+                <Iconify
+                  icon={confirmPassword.value ? 'solar:eye-bold' : 'solar:eye-closed-bold'}
+                />
+              </IconButton>
+            </InputAdornment>
+          ),
+        }}
+      />
       <LoadingButton
         fullWidth
         color="inherit"

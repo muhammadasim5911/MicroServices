@@ -17,7 +17,7 @@ export function WorkspacesPopover({ data = [], sx, ...other }) {
 
   const mediaQuery = 'sm';
 
-  const [workspace, setWorkspace] = useState(data[0]);
+  const [workspace, setWorkspace] = useState(data);
 
   const handleChangeWorkspace = useCallback(
     (newValue) => {
@@ -39,12 +39,12 @@ export function WorkspacesPopover({ data = [], sx, ...other }) {
         }}
         {...other}
       >
-        <Box
+        {/* <Box
           component="img"
           alt={workspace?.name}
           src={workspace?.logo}
           sx={{ width: 24, height: 24, borderRadius: '50%' }}
-        />
+        /> */}
 
         <Box
           component="span"
@@ -56,7 +56,7 @@ export function WorkspacesPopover({ data = [], sx, ...other }) {
           {workspace?.name}
         </Box>
 
-        <Label
+        {/* <Label
           color={workspace?.plan === 'Free' ? 'default' : 'info'}
           sx={{
             height: 22,
@@ -64,11 +64,11 @@ export function WorkspacesPopover({ data = [], sx, ...other }) {
           }}
         >
           {workspace?.plan}
-        </Label>
+        </Label> */}
 
         <Iconify width={16} icon="carbon:chevron-sort" sx={{ color: 'text.disabled' }} />
       </ButtonBase>
-
+      {/* 
       <CustomPopover
         open={popover.open}
         anchorEl={popover.anchorEl}
@@ -93,7 +93,7 @@ export function WorkspacesPopover({ data = [], sx, ...other }) {
             </MenuItem>
           ))}
         </MenuList>
-      </CustomPopover>
+      </CustomPopover> */}
     </>
   );
 }

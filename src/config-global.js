@@ -7,7 +7,7 @@ import packageJson from '../package.json';
 export const CONFIG = {
   appName: 'Minimal UI',
   appVersion: packageJson.version,
-  serverUrl: 'https://api-dev-minimal-v610.pages.dev',
+  serverUrl: 'http://35.182.184.82:3001',
   assetsDir: import.meta.env.VITE_ASSETS_DIR ?? '',
   /**
    * Auth

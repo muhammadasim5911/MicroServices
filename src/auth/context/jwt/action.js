@@ -6,19 +6,20 @@ import { STORAGE_KEY } from './constant';
 /** **************************************
  * Sign in
  *************************************** */
-export const signInWithPassword = async ({ email, password }) => {
+export const signInWithPassword = async ({ emailAddress, password }) => {
   try {
-    const params = { email, password };
+    const params = { emailAddress, password };
 
     const res = await axios.post(endpoints.auth.signIn, params);
 
-    const { accessToken } = res.data;
+    const { token } = res.data.data;
+    console.log('🚀 ~ signInWithPassword ~ res.data;:', res.data);
 
-    if (!accessToken) {
+    if (!token) {
       throw new Error('Access token not found in response');
     }
 
-    setSession(accessToken);
+    setSession(token);
   } catch (error) {
     console.error('Error during sign in:', error);
     throw error;
@@ -28,24 +29,27 @@ export const signInWithPassword = async ({ email, password }) => {
 /** **************************************
  * Sign up
  *************************************** */
-export const signUp = async ({ email, password, firstName, lastName }) => {
+export const signUp = async ({ emailAddress, password, firstName, lastName, company }) => {
   const params = {
-    email,
+    emailAddress,
     password,
     firstName,
     lastName,
+    company: {
+      name: company,
+    },
   };
 
   try {
     const res = await axios.post(endpoints.auth.signUp, params);
 
-    const { accessToken } = res.data;
+    const { token } = res.data.data;
 
-    if (!accessToken) {
+    if (!token) {
       throw new Error('Access token not found in response');
     }
 
-    sessionStorage.setItem(STORAGE_KEY, accessToken);
+    sessionStorage.setItem(STORAGE_KEY, token);
   } catch (error) {
     console.error('Error during sign up:', error);
     throw error;
