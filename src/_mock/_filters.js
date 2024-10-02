@@ -1,9 +1,9 @@
 export const filterOptions = [
-  { name: 'Input', value: 'input', id: 1 },
-  { name: 'Radio Buttons', value: 'radio', id: 2 },
-  { name: 'DropDown', value: 'dropDown', id: 3 },
-  { name: 'Check Boxes', value: 'check', id: 4 },
-  { name: 'Range Slider', value: 'range', id: 5 },
+  { name: 'Input', value: 'INPUT', id: 1 },
+  { name: 'Radio Buttons', value: 'RADIO', id: 2 },
+  { name: 'DropDown', value: 'DROP_DOWN', id: 3 },
+  { name: 'Check Boxes', value: 'CHECK_BOX', id: 4 },
+  { name: 'Range Slider', value: 'RANGE_SLIDER', id: 5 },
 ];
 export const filterKeys = [
   {

@@ -31,6 +31,7 @@ import { OverviewAppView } from 'src/sections/overview/app/view';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LoadingButton } from '@mui/lab';
 import { label } from 'yet-another-react-lightbox';
+import { getAllFilters } from 'src/actions/filters';
 
 // ----------------------------------------------------------------------
 
@@ -47,8 +48,9 @@ export const NewTourSchema = zod.object({
 });
 
 export default function OverviewAppPage() {
-  const [filters, setFilters] = useState([]);
   const [selectedGroups, setSelectedGroups] = useState([]);
+  const { allFilters } = getAllFilters();
+  console.log('🚀 ~ OverviewAppPage ~ allFilters:', allFilters);
 
   const [selected, setSelected] = useState();
   const [selectedChannel, setSelectedChannel] = useState();
@@ -71,22 +73,22 @@ export default function OverviewAppPage() {
   const { watch, reset, setValue, handleSubmit } = methods;
   const formValues = watch();
 
-  useEffect(() => {
-    async function fetchData() {
-      const url = 'https://66f4701877b5e889709983c0.mockapi.io/api/v1/filterkey'; // Replace with your API endpoint
-      try {
-        const response = await axios.get(url, {
-          headers: {
-            'Content-Type': 'application/json', // Specify the content type
-          },
-        });
-        setFilters(response.data);
-      } catch (error) {
-        console.log('Success:', error.data);
-      } // ...
-    }
-    fetchData();
-  }, []);
+  // useEffect(() => {
+  //   async function fetchData() {
+  //     const url = 'https://66f4701877b5e889709983c0.mockapi.io/api/v1/filterkey'; // Replace with your API endpoint
+  //     try {
+  //       const response = await axios.get(url, {
+  //         headers: {
+  //           'Content-Type': 'application/json', // Specify the content type
+  //         },
+  //       });
+  //       setFilters(response.data);
+  //     } catch (error) {
+  //       console.log('Success:', error.data);
+  //     } // ...
+  //   }
+  //   fetchData();
+  // }, []);
   const RangeSlider = ({ label, min = 0, max = 100 }) => {
     const [value, setValue] = useState([min, max]);
 
@@ -110,7 +112,7 @@ export default function OverviewAppPage() {
               let valuestoSend = [
                 ...selectedGroups,
                 {
-                  fieldType: 'Range Slider',
+                  fieldType: 'RANGE_SLIDER',
                   values: `Range Slider (${value[0]} - ${value[1]})`,
                 },
               ];
@@ -143,12 +145,12 @@ export default function OverviewAppPage() {
   });
   const renderDynamicField = (item) => {
     switch (item?.filterType) {
-      case 'Input':
+      case 'INPUT':
         return (
           <>
             <Stack spacing={1.5}>
               <Box display="flex" justifyContent="space-between" alignItems="center">
-                <Typography variant="subtitle2">{item.label}</Typography>
+                <Typography variant="subtitle2">{item.filterLabel}</Typography>
                 <LoadingButton
                   onClick={() => {
                     if (!formValues.label) {
@@ -175,11 +177,11 @@ export default function OverviewAppPage() {
                   {'Add'}
                 </LoadingButton>
               </Box>
-              <Field.Text name="label" placeholder={item?.label} />
+              <Field.Text name="label" placeholder={item?.filterLabel} />
             </Stack>
           </>
         );
-      case 'Radio Buttons':
+      case 'RADIO':
         return (
           <>
             <Box>
@@ -189,7 +191,7 @@ export default function OverviewAppPage() {
                 alignItems="center"
                 marginBottom={'20px'}
               >
-                <Typography variant="subtitle2">{item.label}</Typography>
+                <Typography variant="subtitle2">{item.filterLabel}</Typography>
                 <LoadingButton
                   onClick={() => {
                     if (!selected) {
@@ -199,7 +201,7 @@ export default function OverviewAppPage() {
                     let valuestoSend = [
                       ...selectedGroups,
                       {
-                        fieldType: 'Radio Button',
+                        fieldType: 'RADIO',
                         values: selected,
                       },
                     ];
@@ -216,7 +218,7 @@ export default function OverviewAppPage() {
                 </LoadingButton>
               </Box>
               <Grid container spacing={2}>
-                {item.values.map((option, index) => (
+                {item.filterValues.map((option, index) => (
                   <Grid item xs={4} key={option}>
                     <FormControlLabel
                       control={
@@ -231,7 +233,7 @@ export default function OverviewAppPage() {
             </Box>
           </>
         );
-      case 'DropDown':
+      case 'DROP_DOWN':
         return (
           <>
             <div>
@@ -241,7 +243,7 @@ export default function OverviewAppPage() {
                 alignItems="center"
                 marginBottom={'20px'}
               >
-                <Typography variant="subtitle2">{item.label}</Typography>
+                <Typography variant="subtitle2">{item.filterLabel}</Typography>
                 <LoadingButton
                   onClick={() => {
                     if (!formValues.dropdown) {
@@ -251,7 +253,7 @@ export default function OverviewAppPage() {
                     let valuestoSend = [
                       ...selectedGroups,
                       {
-                        fieldType: 'DropDown',
+                        fieldType: 'DROP_DOWN',
                         values: formValues.dropdown,
                       },
                     ];
@@ -274,7 +276,7 @@ export default function OverviewAppPage() {
                 name="dropdown"
                 value={formValues.dropdown}
                 placeholder="Select a value"
-                options={item.values}
+                options={item.filterValues}
                 getOptionLabel={(option) => option || ''}
                 isOptionEqualToValue={(option, value) => option === value}
                 renderOption={(props, tourGuide) => (
@@ -297,13 +299,13 @@ export default function OverviewAppPage() {
             </div>
           </>
         );
-      case 'Check Boxes':
+      case 'CHECK_BOX':
         return (
           <>
             {item.values.length && (
               <Stack spacing={1}>
                 <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Typography variant="subtitle2">{item.label}</Typography>
+                  <Typography variant="subtitle2">{item.filterLabel}</Typography>
                   <LoadingButton
                     onClick={() => {
                       if (!formValues.values || formValues.values.length === 0) {
@@ -313,7 +315,7 @@ export default function OverviewAppPage() {
                       let valuestoSend = [
                         ...selectedGroups,
                         {
-                          fieldType: 'CheckBox',
+                          fieldType: 'CHECK_BOX',
                           values: formValues.values,
                         },
                       ];
@@ -332,7 +334,7 @@ export default function OverviewAppPage() {
                 </Box>
                 <Field.MultiCheckbox
                   name="values"
-                  options={item.values.map((value) => ({
+                  options={item.filterValues.map((value) => ({
                     label: value, // The display label
                     value: value, // The actual value
                   }))}
@@ -342,11 +344,11 @@ export default function OverviewAppPage() {
             )}
           </>
         );
-      case 'Range Slider':
+      case 'RANGE_SLIDER':
         return (
           <>
             <RangeSlider
-              label={item?.label}
+              label={item?.filterLabel}
               min={parseInt(item.minvalue)}
               max={parseInt(item.maxvalue)}
             />
@@ -397,7 +399,7 @@ export default function OverviewAppPage() {
 
       <Divider />
       <Stack spacing={3} sx={{ p: 3 }}>
-        {filters ? filters.map((item) => renderDynamicField(item)) : null}
+        {allFilters ? allFilters.map((item) => renderDynamicField(item)) : null}
       </Stack>
     </Card>
   );
@@ -488,7 +490,7 @@ export default function OverviewAppPage() {
   return (
     <Form methods={methods} onSubmit={() => {}}>
       <Stack spacing={{ xs: 3, md: 5 }} sx={{ mx: 'auto', maxWidth: { xs: 720, xl: 880 } }}>
-        {filters.length ? renderDetails : null}
+        {allFilters.length ? renderDetails : null}
         {selectedGroups.length ? rendergroups : null}
         {renderChannels}
         {renderSubject}

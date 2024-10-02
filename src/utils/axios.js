@@ -32,7 +32,8 @@ export const fetcher = async (args) => {
 
 export const endpoints = {
   filters: {
-    filterTypes: '/api/v1/filterKeys',
+    filterTypes: '/company-users/possible-filter-keys/',
+    filters: '/filters',
   },
   chat: '/api/chat',
   kanban: '/api/kanban',

@@ -134,9 +134,9 @@ export const navData = [
         path: paths.dashboard.tour.root,
         icon: ICONS.tour,
         children: [
-          // { title: 'List', path: paths.dashboard.tour.root },
-          // { title: 'Details', path: paths.dashboard.tour.demo.details },
-          // { title: 'Add Filters', path: paths.dashboard.addfilters },
+          { title: 'List', path: paths.dashboard.tour.root },
+          { title: 'Details', path: paths.dashboard.tour.demo.details },
+          { title: 'Add Filters', path: paths.dashboard.addfilters },
 
           { title: 'Create', path: paths.dashboard.tour.new },
 

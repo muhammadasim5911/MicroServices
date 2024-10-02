@@ -32,7 +32,6 @@ import { SignOutButton } from './sign-out-button';
 export function AccountDrawer({ data = [], sx, ...other }) {
   const theme = useTheme();
   const { user } = useAuthContext();
-  console.log('🚀 ~ AccountDrawer ~ user:', user);
 
   const router = useRouter();
 
