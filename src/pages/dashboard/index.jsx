@@ -50,7 +50,6 @@ export const NewTourSchema = zod.object({
 export default function OverviewAppPage() {
   const [selectedGroups, setSelectedGroups] = useState([]);
   const { allFilters } = getAllFilters();
-  console.log('🚀 ~ OverviewAppPage ~ allFilters:', allFilters);
 
   const [selected, setSelected] = useState();
 
@@ -287,7 +286,7 @@ export default function OverviewAppPage() {
       case 'CHECK_BOX':
         return (
           <>
-            {item.values.length && (
+            {item.filterValues.length && (
               <Stack spacing={1}>
                 <Box display="flex" justifyContent="space-between" alignItems="center">
                   <Typography variant="subtitle2">{item.filterLabel}</Typography>
@@ -494,7 +493,7 @@ export default function OverviewAppPage() {
   return (
     <Form methods={methods} onSubmit={() => {}}>
       <Stack spacing={{ xs: 3, md: 5 }} sx={{ mx: 'auto', maxWidth: { xs: 720, xl: 880 } }}>
-        {allFilters.length ? renderDetails : null}
+        {allFilters ? renderDetails : null}
         {selectedGroups.length ? rendergroups : null}
         {renderChannels}
         {renderSubject}
