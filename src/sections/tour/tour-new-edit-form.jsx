@@ -127,33 +127,6 @@ export function TourNewEditForm({ currentTour }) {
     } catch (error) {
       toast.error(error?.message);
     }
-
-    // console.log('🚀 ~ onSubmit ~ data:', data);
-
-    // const url = 'https://66f4701877b5e889709983c0.mockapi.io/api/v1/filterkey'; // Replace with your API endpoint
-
-    // try {
-    //   const response = await axios.post(url, data, {
-    //     headers: {
-    //       'Content-Type': 'application/json', // Specify the content type
-    //     },
-    //   });
-
-    //   console.log('Success:', response.data);
-    //   toast.success('Create success!');
-
-    //   reset({
-    //     filterKey: '',
-    //     filterType: '',
-    //     label: '',
-    //     minvalue: '',
-    //     maxvalue: '',
-    //     values: [],
-    //   }); // Resets the form fields to default values
-    // } catch (error) {
-    //   console.error('Error:', error);
-    //   toast.error('Something went wrong!');
-    // }
   });
   const handleSelectAll = (event) => {
     if (event.target.checked) {

@@ -53,6 +53,7 @@ export default function OverviewAppPage() {
   console.log('🚀 ~ OverviewAppPage ~ allFilters:', allFilters);
 
   const [selected, setSelected] = useState();
+
   const [selectedChannel, setSelectedChannel] = useState();
 
   const defaultValues = useMemo(
@@ -73,22 +74,6 @@ export default function OverviewAppPage() {
   const { watch, reset, setValue, handleSubmit } = methods;
   const formValues = watch();
 
-  // useEffect(() => {
-  //   async function fetchData() {
-  //     const url = 'https://66f4701877b5e889709983c0.mockapi.io/api/v1/filterkey'; // Replace with your API endpoint
-  //     try {
-  //       const response = await axios.get(url, {
-  //         headers: {
-  //           'Content-Type': 'application/json', // Specify the content type
-  //         },
-  //       });
-  //       setFilters(response.data);
-  //     } catch (error) {
-  //       console.log('Success:', error.data);
-  //     } // ...
-  //   }
-  //   fetchData();
-  // }, []);
   const RangeSlider = ({ label, min = 0, max = 100 }) => {
     const [value, setValue] = useState([min, max]);
 
@@ -451,7 +436,26 @@ export default function OverviewAppPage() {
 
       <Divider />
       <Stack spacing={3} sx={{ p: 3 }}>
-        <Field.MultiCheckbox
+        <Grid container spacing={2}>
+          {['Email', 'Whatsapp', 'Push Notification', 'SMS', 'In app messages'].map(
+            (option, index) => (
+              <Grid item xs={4} key={option}>
+                <FormControlLabel
+                  control={
+                    <Radio
+                      disabled={index != 0}
+                      checked={option === selectedChannel}
+                      onClick={() => setSelectedChannel(option)}
+                    />
+                  }
+                  label={option}
+                  sx={{ ...(option === 'all' && { textTransform: 'capitalize' }) }}
+                />
+              </Grid>
+            )
+          )}
+        </Grid>
+        {/* <Field.MultiCheckbox
           name="channel"
           options={['Email', 'Whatsapp', 'Push Notification', 'SMS', 'In app messages'].map(
             (value) => ({
@@ -460,7 +464,7 @@ export default function OverviewAppPage() {
             })
           )}
           sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}
-        />
+        /> */}
       </Stack>
     </Card>
   );

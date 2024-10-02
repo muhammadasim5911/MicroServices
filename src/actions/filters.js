@@ -23,7 +23,7 @@ export function getFilterKeys(companyId) {
 
   const memoizedValue = useMemo(
     () => ({
-      response: data,
+      response: data.data,
     }),
     [data]
   );
