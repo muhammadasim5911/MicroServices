@@ -38,6 +38,7 @@ export const endpoints = {
   },
   user: {
     getAllUsers: '/company-users/all?pageNumber=1&pageSize=10',
+    uploadCSV: '/users/upload-csv',
   },
   chat: '/api/chat',
   kanban: '/api/kanban',

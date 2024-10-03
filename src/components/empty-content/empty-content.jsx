@@ -1,9 +1,11 @@
+import { Button } from '@mui/material';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 import { CONFIG } from 'src/config-global';
 import { varAlpha } from 'src/theme/styles';
+import { Iconify } from '../iconify';
 
 // ----------------------------------------------------------------------
 
@@ -14,6 +16,8 @@ export function EmptyContent({
   filled,
   slotProps,
   description,
+  showButton,
+  onButtonPress,
   title = 'No data',
   ...other
 }) {
@@ -68,6 +72,17 @@ export function EmptyContent({
         >
           {description}
         </Typography>
+      )}
+
+      {showButton && (
+        <Button
+          sx={{ marginTop: 10, width: '20%' }}
+          variant="contained"
+          startIcon={<Iconify icon="lock" />}
+          onClick={onButtonPress}
+        >
+          Generate new API key
+        </Button>
       )}
 
       {action && action}

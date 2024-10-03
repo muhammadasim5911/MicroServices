@@ -7,9 +7,11 @@ import TextField from '@mui/material/TextField';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
+import axios, { fetcher, endpoints } from 'src/utils/axios';
 
 import { Upload } from 'src/components/upload';
 import { Iconify } from 'src/components/iconify';
+import { uploadCSVFile } from 'src/actions/users';
 
 // ----------------------------------------------------------------------
 
@@ -38,8 +40,27 @@ export function FileManagerNewFolderDialog({
     [files]
   );
 
-  const handleUpload = () => {
-    onClose();
+  const handleUpload = async () => {
+    // await uploadCSVFile(files);
+    const formData = new FormData();
+    formData.append('csvFile', files[0]);
+
+    try {
+      const response = await axios.post(`${endpoints.user.uploadCSV}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      // Mutate the SWR cache to re-fetch the users after upload
+
+      return response.data;
+    } catch (error) {
+      console.error('Error uploading CSV file:', error);
+      throw error;
+    }
+
+    // onClose();
     console.info('ON UPLOAD');
   };
 

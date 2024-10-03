@@ -37,6 +37,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
+import { useAuthContext } from 'src/auth/hooks';
 
 // ----------------------------------------------------------------------
 
@@ -52,10 +53,12 @@ export function FileManagerView() {
 
   const dateError = fIsAfter(filters.state.startDate, filters.state.endDate);
   const [keys, setKeys] = useState([]);
+  const { user } = useAuthContext();
+
   const generateKey = () => {
     const newKey = {
       id: Date.now(), // Unique ID based on the current timestamp
-      publicKey: `public-${Math.random().toString(36).substring(2, 15)}`,
+      uploadedby: `${user?.firstName} ${user?.lastName}`,
       privateKey: `private-${Math.random().toString(36).substring(2, 15)}`,
       createdAt: new Date().toLocaleString(),
     };
@@ -69,17 +72,14 @@ export function FileManagerView() {
       <DashboardContent>
         <Stack direction="row" alignItems="center" justifyContent="space-between">
           <Typography variant="h4">API key</Typography>
-          <Button variant="contained" startIcon={<Iconify icon="lock" />} onClick={generateKey}>
-            Generate
-          </Button>
         </Stack>
         {keys.length > 0 ? (
-          <TableContainer component={Paper} sx={{ marginTop: 20 }}>
+          <TableContainer component={Paper} sx={{ marginTop: 5 }}>
             <Table sx={{ minWidth: 650 }} aria-label="keys table">
               <TableHead>
                 <TableRow>
                   <TableCell>
-                    <Typography variant="body1">Public Key</Typography>
+                    <Typography variant="body1">Created By</Typography>
                   </TableCell>
                   <TableCell>
                     <Typography variant="body1">Private Key</Typography>
@@ -96,7 +96,7 @@ export function FileManagerView() {
                 {keys.map((key) => (
                   <TableRow key={key.id}>
                     <TableCell>
-                      <Typography variant="body2">{key.publicKey}</Typography>
+                      <Typography variant="body2">{key.uploadedby}</Typography>
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2">{key.privateKey}</Typography>
@@ -119,7 +119,13 @@ export function FileManagerView() {
             </Table>
           </TableContainer>
         ) : (
-          <EmptyContent filled sx={{ py: 10, marginTop: 1 }} />
+          <EmptyContent
+            title="No Api key found you can generate new API key from below button"
+            showButton={true}
+            onButtonPress={generateKey}
+            filled
+            sx={{ py: 10, marginTop: 1 }}
+          />
         )}
         {/* <Stack spacing={2.5} sx={{ my: { xs: 3, md: 5 } }}>
           {renderFilters}
