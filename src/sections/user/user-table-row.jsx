@@ -32,47 +32,47 @@ export function UserTableRow({ row, selected, onEditRow, onSelectRow, onDeleteRo
   return (
     <>
       <TableRow hover selected={selected} aria-checked={selected} tabIndex={-1}>
-        <TableCell padding="checkbox">
-          <Checkbox id={row.id} checked={selected} onClick={onSelectRow} />
-        </TableCell>
+        {/* <TableCell padding="checkbox">
+          <Checkbox id={row?.id} checked={selected} onClick={onSelectRow} />
+        </TableCell> */}
 
         <TableCell>
-          <Stack spacing={2} direction="row" alignItems="center">
-            <Avatar alt={row.name} src={row.avatarUrl} />
+          <Stack spacing={2} direction="row?" alignItems="center">
+            <Avatar alt={`${row?.firstName} ${row?.lastName}`} src={row?.avatarUrl} />
 
             <Stack sx={{ typography: 'body2', flex: '1 1 auto', alignItems: 'flex-start' }}>
               <Link color="inherit" onClick={onEditRow} sx={{ cursor: 'pointer' }}>
-                {row.name}
+                {`${row?.firstName} ${row?.lastName}`}
               </Link>
               <Box component="span" sx={{ color: 'text.disabled' }}>
-                {row.email}
+                {row?.email}
               </Box>
             </Stack>
           </Stack>
         </TableCell>
 
-        <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.phoneNumber}</TableCell>
+        <TableCell sx={{ whiteSpace: 'nowrap' }}>{row?.phoneNumber}</TableCell>
 
-        <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.company}</TableCell>
+        <TableCell sx={{ whiteSpace: 'nowrap' }}>{row?.company}</TableCell>
 
-        <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.role}</TableCell>
+        <TableCell sx={{ whiteSpace: 'nowrap' }}>{row?.gender}</TableCell>
 
-        <TableCell>
+        {/* <TableCell>
           <Label
             variant="soft"
             color={
-              (row.status === 'active' && 'success') ||
-              (row.status === 'pending' && 'warning') ||
-              (row.status === 'banned' && 'error') ||
+              (row?.status === 'active' && 'success') ||
+              (row?.status === 'pending' && 'warning') ||
+              (row?.status === 'banned' && 'error') ||
               'default'
             }
           >
-            {row.status}
+            {row?.status}
           </Label>
-        </TableCell>
+        </TableCell> */}
 
-        <TableCell>
-          <Stack direction="row" alignItems="center">
+        {/* <TableCell>
+          <Stack direction="row?" alignItems="center">
             <Tooltip title="Quick Edit" placement="top" arrow>
               <IconButton
                 color={quickEdit.value ? 'inherit' : 'default'}
@@ -86,7 +86,7 @@ export function UserTableRow({ row, selected, onEditRow, onSelectRow, onDeleteRo
               <Iconify icon="eva:more-vertical-fill" />
             </IconButton>
           </Stack>
-        </TableCell>
+        </TableCell> */}
       </TableRow>
 
       <UserQuickEditForm currentUser={row} open={quickEdit.value} onClose={quickEdit.onFalse} />

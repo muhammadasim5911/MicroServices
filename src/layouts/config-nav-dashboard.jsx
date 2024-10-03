@@ -63,19 +63,19 @@ export const navData = [
   {
     subheader: 'Management',
     items: [
-      // {
-      //   title: 'User',
-      //   path: paths.dashboard.user.root,
-      //   icon: ICONS.user,
-      //   children: [
-      //     { title: 'Profile', path: paths.dashboard.user.root },
-      //     { title: 'Cards', path: paths.dashboard.user.cards },
-      //     { title: 'List', path: paths.dashboard.user.list },
-      //     { title: 'Create', path: paths.dashboard.user.new },
-      //     { title: 'Edit', path: paths.dashboard.user.demo.edit },
-      //     { title: 'Account', path: paths.dashboard.user.account },
-      //   ],
-      // },
+      {
+        title: 'User',
+        path: paths.dashboard.user.root,
+        icon: ICONS.user,
+        children: [
+          // { title: 'Profile', path: paths.dashboard.user.root },
+          // { title: 'Cards', path: paths.dashboard.user.cards },
+          { title: 'List', path: paths.dashboard.user.list },
+          // { title: 'Create', path: paths.dashboard.user.new },
+          // { title: 'Edit', path: paths.dashboard.user.demo.edit },
+          // { title: 'Account', path: paths.dashboard.user.account },
+        ],
+      },
       // {
       //   title: 'Product',
       //   path: paths.dashboard.product.root,
@@ -136,6 +136,7 @@ export const navData = [
         children: [
           // { title: 'List', path: paths.dashboard.tour.root },
           // { title: 'Details', path: paths.dashboard.tour.demo.details },
+
           // { title: 'Add Filters', path: paths.dashboard.addfilters },
 
           { title: 'Create', path: paths.dashboard.tour.new },
@@ -143,6 +144,8 @@ export const navData = [
           // { title: 'Edit', path: paths.dashboard.tour.demo.edit },
         ],
       },
+      { title: 'Manage Api Key', path: paths.dashboard.fileManager, icon: ICONS.folder },
+
       // { title: 'File manager', path: paths.dashboard.fileManager, icon: ICONS.folder },
       // {
       //   title: 'Mail',

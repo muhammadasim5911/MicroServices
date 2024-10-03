@@ -14,8 +14,9 @@ import { filterKeys, filterOptions } from 'src/_mock/_filters';
 import { TOUR_SERVICE_OPTIONS } from 'src/_mock';
 import { Box, Button, Checkbox, FormControlLabel, FormGroup, Paper, useTheme } from '@mui/material';
 import axios from 'axios';
-import { CreateFilter, getFilterKeys } from 'src/actions/filters';
+import { CreateFilter, getFilterKeys, getFilterValues } from 'src/actions/filters';
 import { useAuthContext } from 'src/auth/hooks';
+import { endpoints } from 'src/utils/axios';
 
 // Define your schema with optional filterKey
 export const NewTourSchema = zod
@@ -30,7 +31,7 @@ export const NewTourSchema = zod
   })
   .superRefine((data, ctx) => {
     const { filterType, filterKey, minvalue, maxvalue, filterValues } = data;
-    if (filterKey && !filterValues.length) {
+    if (filterKey && !filterValues?.length) {
       ctx.addIssue({
         path: ['filterValues'], // Path to the issue
         code: zod.ZodIssueCode.custom,
@@ -38,13 +39,17 @@ export const NewTourSchema = zod
       });
     }
     if (
-      (filterType === 'RADIO' || filterType === 'DROP_DOWN' || filterType === 'CHECK_BOX') &&
+      (filterType === 'RADIO' ||
+        filterType === 'DROP_DOWN' ||
+        filterType === 'CHECK_BOX' ||
+        filterType === 'INPUT' ||
+        filterType === 'RANGE_SLIDER') &&
       !filterKey
     ) {
       ctx.addIssue({
         path: ['filterKey'], // Path to the issue
         code: zod.ZodIssueCode.custom,
-        message: 'Filter key is required when filter type is radio, dropdown, or checkbox!',
+        message: 'Filter key is required ',
       });
     } else if (filterType === 'RANGE_SLIDER' && !minvalue) {
       ctx.addIssue({
@@ -91,7 +96,7 @@ export function TourNewEditForm({ currentTour }) {
   });
 
   const [valuesData, setValuesData] = useState([]);
-  const { response } = getFilterKeys(user?.company?._id);
+  const { filterKeysData } = getFilterKeys(user?.company?._id);
 
   const {
     watch,
@@ -137,17 +142,18 @@ export function TourNewEditForm({ currentTour }) {
     }
   };
 
-  const allSelected = valuesData.length > 0 && values.filterValues.length === valuesData.length;
+  const allSelected = valuesData?.length > 0 && values.filterValues?.length === valuesData?.length;
 
   useEffect(() => {
     // Update "Select All" checkbox based on individual selections
-    if (allSelected && values.filterValues.length !== valuesData.length) {
+    if (allSelected && values?.filterValues?.length !== valuesData?.length) {
       setValue(
         'filterValues',
         valuesData.map((option) => option.value)
       );
     }
   }, [values.filterValues]);
+
   const renderDetails = (
     <Card>
       <Stack spacing={3} sx={{ p: 3 }}>
@@ -234,58 +240,80 @@ export function TourNewEditForm({ currentTour }) {
           </Stack>
         )}
         {/* Conditionally render filterKey based on filterType */}
-        {(values.filterType === 'RADIO' ||
-          values.filterType === 'DROP_DOWN' ||
-          values.filterType === 'CHECK_BOX') && (
-          <div>
-            <Typography variant="subtitle2" sx={{ mb: 1.5 }}>
-              Filter key
-            </Typography>
-            <Field.Autocomplete
-              onChange={(event, newValue) => {
-                setValue('filterKey', newValue.name);
-                setValue('values', []);
 
-                setValuesData(newValue.data);
-              }}
-              name="filterKey"
-              placeholder="Select filter key"
-              options={filterKeys}
-              getOptionLabel={(option) => option.name || ''}
-              isOptionEqualToValue={(option, value) => option.name === value}
-              renderOption={(props, tourGuide) => (
-                <li {...props} key={tourGuide.id}>
-                  {tourGuide.name}
-                </li>
-              )}
-              renderTags={(selected, getTagProps) =>
-                selected.map((tourGuide, index) => (
-                  <Chip
-                    {...getTagProps({ index })}
-                    key={tourGuide.id}
-                    size="small"
-                    variant="soft"
-                    label={tourGuide.name}
-                  />
-                ))
-              }
-              PaperComponent={({ children }) => {
-                const theme = useTheme();
-                return (
-                  <Paper
-                    sx={{
-                      background: theme.palette.mode === 'dark' ? '#121212' : 'white', // Dark mode adaptive color
-                      color: theme.palette.mode === 'dark' ? 'white' : 'black', // Adaptive text color
-                      boxShadow: 'none',
-                    }}
-                  >
-                    {children}
-                  </Paper>
+        <div>
+          <Typography variant="subtitle2" sx={{ mb: 1.5 }}>
+            Filter key
+          </Typography>
+          <Field.Autocomplete
+            onChange={async (event, newValue) => {
+              setValue('filterKey', newValue.name);
+              setValue('values', []);
+              // const { filterValues } = getFilterValues(user?.company?._id, newValue.name);
+              // console.log('🚀 ~ TourNewEditForm ~ filterValues:', filterValues);
+
+              // setValuesData(getFilterValues(user?.company?._id, newValue.name));
+
+              try {
+                const response = await axios.get(
+                  `http://35.182.184.82:3001/company-users/possible-filter-value?companyId=${user?.company?._id}&key=${newValue.name}`
                 );
-              }}
-            />
-          </div>
-        )}
+                console.log('Data:', response.data);
+              } catch (error) {
+                if (error.response) {
+                  // Server responded with a status code outside the range of 2xx
+                  console.error('Error Response:', error.response.data);
+                  console.error('Error Status:', error.response.status);
+                } else if (error.request) {
+                  // Request was made but no response received
+                  console.error('No Response:', error.request);
+                } else {
+                  // Something else happened during request setup
+                  console.error('Error:', error.message);
+                }
+              }
+            }}
+            name="filterKey"
+            placeholder="Select filter key"
+            options={filterKeysData?.data.map((value) => ({
+              label: value, // The display label
+              value: value,
+              name: value, // The actual value
+            }))}
+            getOptionLabel={(option) => option.name || ''}
+            isOptionEqualToValue={(option, value) => option.name === value}
+            renderOption={(props, tourGuide) => (
+              <li {...props} key={tourGuide.id}>
+                {tourGuide.name}
+              </li>
+            )}
+            renderTags={(selected, getTagProps) =>
+              selected.map((tourGuide, index) => (
+                <Chip
+                  {...getTagProps({ index })}
+                  key={tourGuide.id}
+                  size="small"
+                  variant="soft"
+                  label={tourGuide.name}
+                />
+              ))
+            }
+            PaperComponent={({ children }) => {
+              const theme = useTheme();
+              return (
+                <Paper
+                  sx={{
+                    background: theme.palette.mode === 'dark' ? '#121212' : 'white', // Dark mode adaptive color
+                    color: theme.palette.mode === 'dark' ? 'white' : 'black', // Adaptive text color
+                    boxShadow: 'none',
+                  }}
+                >
+                  {children}
+                </Paper>
+              );
+            }}
+          />
+        </div>
 
         {values?.filterKey ? (
           <Stack spacing={1}>
@@ -298,8 +326,8 @@ export function TourNewEditForm({ currentTour }) {
                   <Checkbox
                     checked={allSelected}
                     indeterminate={
-                      values.filterValues.length > 0 &&
-                      values.filterValues.length < valuesData.length
+                      values?.filterValues?.length > 0 &&
+                      values?.filterValues?.length < valuesData?.length
                     }
                     onChange={handleSelectAll}
                   />

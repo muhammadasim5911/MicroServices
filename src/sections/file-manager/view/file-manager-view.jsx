@@ -139,7 +139,7 @@ export function FileManagerView() {
     <>
       <DashboardContent>
         <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Typography variant="h4">File manager</Typography>
+          <Typography variant="h4">Upload Company Data</Typography>
           <Button
             variant="contained"
             startIcon={<Iconify icon="eva:cloud-upload-fill" />}

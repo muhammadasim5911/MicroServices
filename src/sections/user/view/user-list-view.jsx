@@ -42,6 +42,8 @@ import {
 import { UserTableRow } from '../user-table-row';
 import { UserTableToolbar } from '../user-table-toolbar';
 import { UserTableFiltersResult } from '../user-table-filters-result';
+import { FileManagerNewFolderDialog } from 'src/sections/file-manager/file-manager-new-folder-dialog';
+import { getAllUsers } from 'src/actions/users';
 
 // ----------------------------------------------------------------------
 
@@ -60,8 +62,10 @@ const TABLE_HEAD = [
 
 export function UserListView() {
   const table = useTable();
-
+  const { allUsers } = getAllUsers();
+  console.log('🚀 ~ UserListView ~ allUsers:', allUsers);
   const router = useRouter();
+  const upload = useBoolean();
 
   const confirm = useBoolean();
 
@@ -135,12 +139,13 @@ export function UserListView() {
           ]}
           action={
             <Button
-              component={RouterLink}
-              href={paths.dashboard.user.new}
+              onClick={upload.onTrue}
+              // component={RouterLink}
+              // href={paths.dashboard.user.new}
               variant="contained"
               startIcon={<Iconify icon="mingcute:add-line" />}
             >
-              New user
+              Import Users
             </Button>
           }
           sx={{ mb: { xs: 3, md: 5 } }}
@@ -221,7 +226,7 @@ export function UserListView() {
 
             <Scrollbar>
               <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
-                <TableHeadCustom
+                {/* <TableHeadCustom
                   order={table.order}
                   orderBy={table.orderBy}
                   headLabel={TABLE_HEAD}
@@ -234,10 +239,10 @@ export function UserListView() {
                       dataFiltered.map((row) => row.id)
                     )
                   }
-                />
+                /> */}
 
                 <TableBody>
-                  {dataFiltered
+                  {allUsers?.data
                     .slice(
                       table.page * table.rowsPerPage,
                       table.page * table.rowsPerPage + table.rowsPerPage
@@ -246,10 +251,10 @@ export function UserListView() {
                       <UserTableRow
                         key={row.id}
                         row={row}
-                        selected={table.selected.includes(row.id)}
-                        onSelectRow={() => table.onSelectRow(row.id)}
-                        onDeleteRow={() => handleDeleteRow(row.id)}
-                        onEditRow={() => handleEditRow(row.id)}
+                        selected={table.selected.includes(row?.id)}
+                        onSelectRow={() => table.onSelectRow(row?.id)}
+                        onDeleteRow={() => handleDeleteRow(row?.id)}
+                        onEditRow={() => handleEditRow(row?.id)}
                       />
                     ))}
 
@@ -264,7 +269,7 @@ export function UserListView() {
             </Scrollbar>
           </Box>
 
-          <TablePaginationCustom
+          {/* <TablePaginationCustom
             page={table.page}
             dense={table.dense}
             count={dataFiltered.length}
@@ -272,10 +277,10 @@ export function UserListView() {
             onPageChange={table.onChangePage}
             onChangeDense={table.onChangeDense}
             onRowsPerPageChange={table.onChangeRowsPerPage}
-          />
+          /> */}
         </Card>
       </DashboardContent>
-
+      <FileManagerNewFolderDialog open={upload.value} onClose={upload.onFalse} />
       <ConfirmDialog
         open={confirm.value}
         onClose={confirm.onFalse}

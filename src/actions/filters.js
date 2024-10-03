@@ -23,7 +23,7 @@ export function getFilterKeys(companyId) {
 
   const memoizedValue = useMemo(
     () => ({
-      response: data.data,
+      filterKeysData: data,
     }),
     [data]
   );
@@ -31,6 +31,20 @@ export function getFilterKeys(companyId) {
   return memoizedValue;
 }
 
+export function getFilterValues(companyId, key) {
+  const url = `${endpoints.filters.filterValues}?companyId=${companyId}&key=${key}`;
+
+  const { data } = useSWR(url, fetcher, swrOptions);
+
+  const memoizedValue = useMemo(
+    () => ({
+      filterValues: data,
+    }),
+    [data]
+  );
+
+  return memoizedValue;
+}
 export function getAllFilters() {
   const url = `${endpoints.filters.filters}/all`;
 
