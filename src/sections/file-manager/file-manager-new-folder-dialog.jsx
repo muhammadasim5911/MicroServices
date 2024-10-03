@@ -8,10 +8,12 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import axios, { fetcher, endpoints } from 'src/utils/axios';
+import { toast } from 'src/components/snackbar';
 
 import { Upload } from 'src/components/upload';
 import { Iconify } from 'src/components/iconify';
 import { uploadCSVFile } from 'src/actions/users';
+import { mutate } from 'swr';
 
 // ----------------------------------------------------------------------
 
@@ -51,8 +53,9 @@ export function FileManagerNewFolderDialog({
           'Content-Type': 'multipart/form-data',
         },
       });
-
-      // Mutate the SWR cache to re-fetch the users after upload
+      mutate(endpoints.user.getAllUsers); // Mutate the SWR cache to re-fetch the users after upload
+      onClose();
+      toast.success('Uploaded Successfully!');
 
       return response.data;
     } catch (error) {
