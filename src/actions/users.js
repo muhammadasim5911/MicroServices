@@ -30,22 +30,26 @@ export function getAllUsers() {
 
   return memoizedValue;
 }
+
 export async function uploadCSVFile(file) {
+  if (!(file instanceof File)) {
+    throw new Error('Invalid file object');
+  }
+
   const formData = new FormData();
   formData.append('file', file);
 
   try {
-    const response = await axios.post(`${endpoints.user.uploadCSV}`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+    const { data } = await axios.post(endpoints.user.uploadCSV, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
 
     // Mutate the SWR cache to re-fetch the users after upload
+    await mutate(endpoints.user.getAllUsers);
 
-    return response.data;
+    return data;
   } catch (error) {
     console.error('Error uploading CSV file:', error);
-    throw error;
+    throw new Error('Failed to upload CSV file. Please try again.');
   }
 }

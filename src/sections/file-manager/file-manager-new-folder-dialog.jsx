@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -7,13 +6,10 @@ import TextField from '@mui/material/TextField';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import axios, { fetcher, endpoints } from 'src/utils/axios';
 import { toast } from 'src/components/snackbar';
-
 import { Upload } from 'src/components/upload';
 import { Iconify } from 'src/components/iconify';
 import { uploadCSVFile } from 'src/actions/users';
-import { mutate } from 'swr';
 
 // ----------------------------------------------------------------------
 
@@ -35,41 +31,28 @@ export function FileManagerNewFolderDialog({
     }
   }, [open]);
 
-  const handleDrop = useCallback(
-    (acceptedFiles) => {
-      setFiles([...files, ...acceptedFiles]);
-    },
-    [files]
-  );
+  const handleDrop = useCallback((acceptedFiles) => {
+    setFiles((prevFiles) => [...prevFiles, ...acceptedFiles]);
+  }, []);
 
   const handleUpload = async () => {
-    // await uploadCSVFile(files);
-    const formData = new FormData();
-    formData.append('csvFile', files[0]);
-
-    try {
-      const response = await axios.post(`${endpoints.user.uploadCSV}`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      mutate(endpoints.user.getAllUsers); // Mutate the SWR cache to re-fetch the users after upload
-      onClose();
-      toast.success('Uploaded Successfully!');
-
-      return response.data;
-    } catch (error) {
-      console.error('Error uploading CSV file:', error);
-      throw error;
+    if (files.length === 0) {
+      toast.error('Please select a file to upload');
+      return;
     }
 
-    // onClose();
-    console.info('ON UPLOAD');
+    try {
+      await uploadCSVFile(files[0]);
+      onClose();
+      toast.success('Uploaded Successfully!');
+    } catch (error) {
+      console.error('Error uploading CSV file:', error);
+      toast.error('Failed to upload file. Please try again.');
+    }
   };
 
   const handleRemoveFile = (inputFile) => {
-    const filtered = files.filter((file) => file !== inputFile);
-    setFiles(filtered);
+    setFiles((prevFiles) => prevFiles.filter((file) => file !== inputFile));
   };
 
   const handleRemoveAllFiles = () => {
@@ -78,7 +61,7 @@ export function FileManagerNewFolderDialog({
 
   return (
     <Dialog fullWidth maxWidth="sm" open={open} onClose={onClose} {...other}>
-      <DialogTitle sx={{ p: (theme) => theme.spacing(3, 3, 2, 3) }}> {title} </DialogTitle>
+      <DialogTitle sx={{ p: (theme) => theme.spacing(3, 3, 2, 3) }}>{title}</DialogTitle>
 
       <DialogContent dividers sx={{ pt: 1, pb: 0, border: 'none' }}>
         {(onCreate || onUpdate) && (
@@ -99,11 +82,12 @@ export function FileManagerNewFolderDialog({
           variant="contained"
           startIcon={<Iconify icon="eva:cloud-upload-fill" />}
           onClick={handleUpload}
+          disabled={files.length === 0}
         >
           Upload
         </Button>
 
-        {!!files.length && (
+        {files.length > 0 && (
           <Button variant="outlined" color="inherit" onClick={handleRemoveAllFiles}>
             Remove all
           </Button>

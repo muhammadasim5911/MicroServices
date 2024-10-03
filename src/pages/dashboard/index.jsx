@@ -128,6 +128,8 @@ export default function OverviewAppPage() {
     console.log('🚀 ~ onSubmit ~ data:', data);
   });
   const renderDynamicField = (item) => {
+    const fieldName = `${item.filterType.toLowerCase()}_${item.filterLabel.replace(/\s+/g, '_')}`;
+
     switch (item?.filterType) {
       case 'INPUT':
         return (
@@ -137,7 +139,7 @@ export default function OverviewAppPage() {
                 <Typography variant="subtitle2">{item.filterLabel}</Typography>
                 <LoadingButton
                   onClick={() => {
-                    if (!formValues.label) {
+                    if (!formValues[fieldName]) {
                       toast.error('Please write something first to add!');
                       return;
                     }
@@ -145,14 +147,14 @@ export default function OverviewAppPage() {
                       ...selectedGroups,
                       {
                         fieldType: 'Manual',
-                        values: formValues.label,
+                        values: formValues[fieldName],
                       },
                     ];
 
                     setSelectedGroups(valuestoSend);
                     toast.success('Added successfully!');
 
-                    setValue('label', '');
+                    setValue(fieldName, '');
                   }}
                   variant="outlined"
                   size="small"
@@ -161,7 +163,7 @@ export default function OverviewAppPage() {
                   {'Add'}
                 </LoadingButton>
               </Box>
-              <Field.Text name="label" placeholder={item?.filterLabel} />
+              <Field.Text name={fieldName} placeholder={item?.filterLabel} />
             </Stack>
           </>
         );
@@ -230,7 +232,7 @@ export default function OverviewAppPage() {
                 <Typography variant="subtitle2">{item.filterLabel}</Typography>
                 <LoadingButton
                   onClick={() => {
-                    if (!formValues.dropdown) {
+                    if (!formValues[fieldName]) {
                       toast.error('Please select an option!');
                       return;
                     }
@@ -238,13 +240,13 @@ export default function OverviewAppPage() {
                       ...selectedGroups,
                       {
                         fieldType: 'DROP_DOWN',
-                        values: formValues.dropdown,
+                        values: formValues[fieldName],
                       },
                     ];
 
                     setSelectedGroups(valuestoSend);
                     toast.success('Added successfully!');
-                    setValue('dropdown', '');
+                    setValue(fieldName, '');
                   }}
                   variant="outlined"
                   size="small"
@@ -255,10 +257,10 @@ export default function OverviewAppPage() {
               </Box>
               <Field.Autocomplete
                 onChange={(event, newValue) => {
-                  setValue('dropdown', newValue);
+                  setValue(fieldName, newValue);
                 }}
-                name="dropdown"
-                value={formValues.dropdown}
+                name={fieldName}
+                value={formValues[fieldName]}
                 placeholder="Select a value"
                 options={item.filterValues}
                 getOptionLabel={(option) => option || ''}
@@ -292,7 +294,7 @@ export default function OverviewAppPage() {
                   <Typography variant="subtitle2">{item.filterLabel}</Typography>
                   <LoadingButton
                     onClick={() => {
-                      if (!formValues.values || formValues.values.length === 0) {
+                      if (!formValues[fieldName] || formValues[fieldName].length === 0) {
                         toast.error('Please select an option!');
                         return;
                       }
@@ -300,14 +302,14 @@ export default function OverviewAppPage() {
                         ...selectedGroups,
                         {
                           fieldType: 'CHECK_BOX',
-                          values: formValues.values,
+                          values: formValues[fieldName],
                         },
                       ];
 
                       setSelectedGroups(valuestoSend);
 
                       toast.success('Added successfully!');
-                      setValue('values', []);
+                      setValue(fieldName, []);
                     }}
                     variant="outlined"
                     size="small"
@@ -317,10 +319,10 @@ export default function OverviewAppPage() {
                   </LoadingButton>
                 </Box>
                 <Field.MultiCheckbox
-                  name="values"
+                  name={fieldName}
                   options={item.filterValues.map((value) => ({
-                    label: value, // The display label
-                    value: value, // The actual value
+                    label: value,
+                    value: value,
                   }))}
                   sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}
                 />
