@@ -26,7 +26,17 @@ import { FileManagerFilters } from '../file-manager-filters';
 import { FileManagerGridView } from '../file-manager-grid-view';
 import { FileManagerFiltersResult } from '../file-manager-filters-result';
 import { FileManagerNewFolderDialog } from '../file-manager-new-folder-dialog';
-import { Card, IconButton } from '@mui/material';
+import {
+  Card,
+  IconButton,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from '@mui/material';
 
 // ----------------------------------------------------------------------
 
@@ -64,29 +74,52 @@ export function FileManagerView() {
           </Button>
         </Stack>
         {keys.length > 0 ? (
-          keys.map((key) => (
-            <Card key={key.id} sx={{ mb: 2 }}>
-              <Typography variant="body2" color="text.secondary">
-                Public Key: {key.publicKey}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Private Key: {key.privateKey}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Created At: {key.createdAt}
-              </Typography>
-
-              <IconButton aria-label="revoke" onClick={() => handleDeleteKey(key.id)}>
-                {/* <DeleteIcon /> */}
-              </IconButton>
-            </Card>
-          ))
+          <TableContainer component={Paper} sx={{ marginTop: 20 }}>
+            <Table sx={{ minWidth: 650 }} aria-label="keys table">
+              <TableHead>
+                <TableRow>
+                  <TableCell>
+                    <Typography variant="body1">Public Key</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body1">Private Key</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body1">Created At</Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body1">Actions</Typography>
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {keys.map((key) => (
+                  <TableRow key={key.id}>
+                    <TableCell>
+                      <Typography variant="body2">{key.publicKey}</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2">{key.privateKey}</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2">{key.createdAt}</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="contained"
+                        startIcon={<Iconify icon="lock" />}
+                        onClick={() => handleDeleteKey(key.id)}
+                      >
+                        Revoke
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         ) : (
-          <Stack alignItems="center" justifyContent="center" sx={{ py: 10 }}>
-            <Typography variant="h6" color="text.secondary">
-              No keys generated
-            </Typography>
-          </Stack>
+          <EmptyContent filled sx={{ py: 10, marginTop: 1 }} />
         )}
         {/* <Stack spacing={2.5} sx={{ my: { xs: 3, md: 5 } }}>
           {renderFilters}

@@ -113,8 +113,26 @@ export function TourNewEditForm({ currentTour }) {
       reset(defaultValues);
     }
   }, [currentTour, defaultValues, reset]);
+  const { filterValues } = getFilterValues(user?.company?._id, values.filterKey);
+
+  useEffect(() => {
+    if (filterValues?.data?.length) {
+      setValuesData(filterValues?.data);
+    }
+  }, [filterValues]);
 
   const onSubmit = handleSubmit(async (data) => {
+    //     let formedData =[];
+
+    //     if(values.filterType=='INPUT'
+
+    //       || values.filterType=='RANGE_SLIDER'
+    //     )
+    //     {
+
+    // formedData = [...data, ...filterValues:''];
+
+    //     }
     try {
       const res = await CreateFilter(data);
 
@@ -135,7 +153,8 @@ export function TourNewEditForm({ currentTour }) {
   });
   const handleSelectAll = (event) => {
     if (event.target.checked) {
-      const allSelectedValues = valuesData.map((option) => option.value); // Select all
+      const allSelectedValues = valuesData.map((option) => option); // Select all
+      console.log('🚀 ~ handleSelectAll ~ allSelectedValues:', allSelectedValues);
       setValue('filterValues', allSelectedValues);
     } else {
       setValue('filterValues', []); // Deselect all
@@ -249,29 +268,9 @@ export function TourNewEditForm({ currentTour }) {
             onChange={async (event, newValue) => {
               setValue('filterKey', newValue.name);
               setValue('values', []);
-              // const { filterValues } = getFilterValues(user?.company?._id, newValue.name);
               // console.log('🚀 ~ TourNewEditForm ~ filterValues:', filterValues);
 
               // setValuesData(getFilterValues(user?.company?._id, newValue.name));
-
-              try {
-                const response = await axios.get(
-                  `http://35.182.184.82:3001/company-users/possible-filter-value?companyId=${user?.company?._id}&key=${newValue.name}`
-                );
-                console.log('Data:', response.data);
-              } catch (error) {
-                if (error.response) {
-                  // Server responded with a status code outside the range of 2xx
-                  console.error('Error Response:', error.response.data);
-                  console.error('Error Status:', error.response.status);
-                } else if (error.request) {
-                  // Request was made but no response received
-                  console.error('No Response:', error.request);
-                } else {
-                  // Something else happened during request setup
-                  console.error('Error:', error.message);
-                }
-              }
             }}
             name="filterKey"
             placeholder="Select filter key"
@@ -315,7 +314,7 @@ export function TourNewEditForm({ currentTour }) {
           />
         </div>
 
-        {values?.filterKey ? (
+        {values?.filterKey && valuesData.length ? (
           <Stack spacing={1}>
             <Box display="flex" alignItems="center" justifyContent="space-between">
               <Typography variant="subtitle2" sx={{ marginRight: 2 }}>
@@ -337,7 +336,12 @@ export function TourNewEditForm({ currentTour }) {
             </Box>
             <Field.MultiCheckbox
               name="filterValues"
-              options={valuesData}
+              options={valuesData.map((value, index) => ({
+                label: value, // The display label
+                value: value,
+                id: index,
+                name: value, // The actual value
+              }))}
               sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)' }}
             />
           </Stack>

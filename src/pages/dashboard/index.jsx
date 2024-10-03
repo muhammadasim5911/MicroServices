@@ -50,6 +50,7 @@ export const NewTourSchema = zod.object({
 export default function OverviewAppPage() {
   const [selectedGroups, setSelectedGroups] = useState([]);
   const { allFilters } = getAllFilters();
+  console.log('🚀 ~ OverviewAppPage ~ allFilters:', allFilters.length);
 
   const [selected, setSelected] = useState();
 
