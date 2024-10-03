@@ -26,21 +26,12 @@ import { FileManagerFilters } from '../file-manager-filters';
 import { FileManagerGridView } from '../file-manager-grid-view';
 import { FileManagerFiltersResult } from '../file-manager-filters-result';
 import { FileManagerNewFolderDialog } from '../file-manager-new-folder-dialog';
+import { Card, IconButton } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
 export function FileManagerView() {
-  const table = useTable({ defaultRowsPerPage: 10 });
-
-  const openDateRange = useBoolean();
-
-  const confirm = useBoolean();
-
   const upload = useBoolean();
-
-  const [view, setView] = useState('list');
-
-  const [tableData, setTableData] = useState(_allFiles);
 
   const filters = useSetState({
     name: '',
@@ -50,113 +41,61 @@ export function FileManagerView() {
   });
 
   const dateError = fIsAfter(filters.state.startDate, filters.state.endDate);
-
-  const dataFiltered = applyFilter({
-    inputData: tableData,
-    comparator: getComparator(table.order, table.orderBy),
-    filters: filters.state,
-    dateError,
-  });
-
-  const dataInPage = rowInPage(dataFiltered, table.page, table.rowsPerPage);
-
-  const canReset =
-    !!filters.state.name ||
-    filters.state.type.length > 0 ||
-    (!!filters.state.startDate && !!filters.state.endDate);
-
-  const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
-
-  const handleChangeView = useCallback((event, newView) => {
-    if (newView !== null) {
-      setView(newView);
-    }
-  }, []);
-
-  const handleDeleteItem = useCallback(
-    (id) => {
-      const deleteRow = tableData.filter((row) => row.id !== id);
-
-      toast.success('Delete success!');
-
-      setTableData(deleteRow);
-
-      table.onUpdatePageDeleteRow(dataInPage.length);
-    },
-    [dataInPage.length, table, tableData]
-  );
-
-  const handleDeleteItems = useCallback(() => {
-    const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
-
-    toast.success('Delete success!');
-
-    setTableData(deleteRows);
-
-    table.onUpdatePageDeleteRows({
-      totalRowsInPage: dataInPage.length,
-      totalRowsFiltered: dataFiltered.length,
-    });
-  }, [dataFiltered.length, dataInPage.length, table, tableData]);
-
-  const renderFilters = (
-    <Stack
-      spacing={2}
-      direction={{ xs: 'column', md: 'row' }}
-      alignItems={{ xs: 'flex-end', md: 'center' }}
-    >
-      <FileManagerFilters
-        filters={filters}
-        dateError={dateError}
-        onResetPage={table.onResetPage}
-        openDateRange={openDateRange.value}
-        onOpenDateRange={openDateRange.onTrue}
-        onCloseDateRange={openDateRange.onFalse}
-        options={{ types: FILE_TYPE_OPTIONS }}
-      />
-
-      <ToggleButtonGroup size="small" value={view} exclusive onChange={handleChangeView}>
-        <ToggleButton value="list">
-          <Iconify icon="solar:list-bold" />
-        </ToggleButton>
-
-        <ToggleButton value="grid">
-          <Iconify icon="mingcute:dot-grid-fill" />
-        </ToggleButton>
-      </ToggleButtonGroup>
-    </Stack>
-  );
-
-  const renderResults = (
-    <FileManagerFiltersResult
-      filters={filters}
-      totalResults={dataFiltered.length}
-      onResetPage={table.onResetPage}
-    />
-  );
-
+  const [keys, setKeys] = useState([]);
+  const generateKey = () => {
+    const newKey = {
+      id: Date.now(), // Unique ID based on the current timestamp
+      publicKey: `public-${Math.random().toString(36).substring(2, 15)}`,
+      privateKey: `private-${Math.random().toString(36).substring(2, 15)}`,
+      createdAt: new Date().toLocaleString(),
+    };
+    setKeys((prevKeys) => [...prevKeys, newKey]);
+  };
+  const handleDeleteKey = (id) => {
+    setKeys((prevKeys) => prevKeys.filter((key) => key.id !== id));
+  };
   return (
     <>
       <DashboardContent>
         <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Typography variant="h4">Upload Company Data</Typography>
-          <Button
-            variant="contained"
-            startIcon={<Iconify icon="eva:cloud-upload-fill" />}
-            onClick={upload.onTrue}
-          >
-            Upload
+          <Typography variant="h4">API key</Typography>
+          <Button variant="contained" startIcon={<Iconify icon="lock" />} onClick={generateKey}>
+            Generate
           </Button>
         </Stack>
+        {keys.length > 0 ? (
+          keys.map((key) => (
+            <Card key={key.id} sx={{ mb: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                Public Key: {key.publicKey}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Private Key: {key.privateKey}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Created At: {key.createdAt}
+              </Typography>
 
-        <Stack spacing={2.5} sx={{ my: { xs: 3, md: 5 } }}>
+              <IconButton aria-label="revoke" onClick={() => handleDeleteKey(key.id)}>
+                {/* <DeleteIcon /> */}
+              </IconButton>
+            </Card>
+          ))
+        ) : (
+          <Stack alignItems="center" justifyContent="center" sx={{ py: 10 }}>
+            <Typography variant="h6" color="text.secondary">
+              No keys generated
+            </Typography>
+          </Stack>
+        )}
+        {/* <Stack spacing={2.5} sx={{ my: { xs: 3, md: 5 } }}>
           {renderFilters}
 
           {canReset && renderResults}
-        </Stack>
+        </Stack> */}
+        {/* <EmptyContent filled sx={{ py: 10 }} /> */}
 
-        {notFound ? (
-          <EmptyContent filled sx={{ py: 10 }} />
+        {/* {notFound ? (
         ) : (
           <>
             {view === 'list' ? (
@@ -176,12 +115,12 @@ export function FileManagerView() {
               />
             )}
           </>
-        )}
+        )} */}
       </DashboardContent>
 
-      <FileManagerNewFolderDialog open={upload.value} onClose={upload.onFalse} />
+      {/* <FileManagerNewFolderDialog open={upload.value} onClose={upload.onFalse} /> */}
 
-      <ConfirmDialog
+      {/* <ConfirmDialog
         open={confirm.value}
         onClose={confirm.onFalse}
         title="Delete"
@@ -202,7 +141,7 @@ export function FileManagerView() {
             Delete
           </Button>
         }
-      />
+      /> */}
     </>
   );
 }

@@ -144,7 +144,7 @@ export const navData = [
           // { title: 'Edit', path: paths.dashboard.tour.demo.edit },
         ],
       },
-      { title: 'Manage Api Key', path: paths.dashboard.fileManager, icon: ICONS.folder },
+      { title: 'Api Key', path: paths.dashboard.fileManager, icon: ICONS.lock },
 
       // { title: 'File manager', path: paths.dashboard.fileManager, icon: ICONS.folder },
       // {
