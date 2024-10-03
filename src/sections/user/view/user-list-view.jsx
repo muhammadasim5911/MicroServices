@@ -138,21 +138,17 @@ export function UserListView() {
             { name: 'User', href: paths.dashboard.user.root },
             { name: 'List' },
           ]}
-          action={
-            <Button
-              onClick={upload.onTrue}
-              // component={RouterLink}
-              // href={paths.dashboard.user.new}
-              variant="contained"
-              startIcon={<Iconify icon="mingcute:add-line" />}
-            >
-              Import Users
-            </Button>
-          }
           sx={{ mb: { xs: 3, md: 5 } }}
         />
         {!allUsers?.data.length ? (
-          <EmptyContent filled sx={{ py: 10 }} />
+          <EmptyContent
+            title="No users found you can upload csv file to import users"
+            filled
+            showButton={true}
+            onClick={upload.onTrue}
+            buttonLabel={'Import Users'}
+            sx={{ py: 10 }}
+          />
         ) : (
           <Card>
             <Tabs

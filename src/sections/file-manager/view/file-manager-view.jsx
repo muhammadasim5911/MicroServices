@@ -124,6 +124,7 @@ export function FileManagerView() {
             showButton={true}
             onButtonPress={generateKey}
             filled
+            buttonLabel="Generate new API key"
             sx={{ py: 10, marginTop: 1 }}
           />
         )}

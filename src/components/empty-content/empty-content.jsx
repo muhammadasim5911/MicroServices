@@ -16,6 +16,7 @@ export function EmptyContent({
   filled,
   slotProps,
   description,
+  buttonLabel = 'Generate',
   showButton,
   onButtonPress,
   title = 'No data',
@@ -81,7 +82,8 @@ export function EmptyContent({
           startIcon={<Iconify icon="lock" />}
           onClick={onButtonPress}
         >
-          Generate new API key
+          {buttonLabel}
+          {/* Generate new API key */}
         </Button>
       )}
 
