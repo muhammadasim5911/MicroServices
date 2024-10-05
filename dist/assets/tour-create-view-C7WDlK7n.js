@@ -1,0 +1,1 @@
+import{j as r,df as s,p as a}from"./index-BaPXjGxN.js";import{C as e}from"./custom-breadcrumbs--HFs1NOs.js";import{T as o}from"./tour-new-edit-form-69GseZbh.js";function n(){return r.jsxs(s,{children:[r.jsx(e,{heading:"Create a new filter",links:[{name:"Dashboard",href:a.dashboard.root},{name:"New filter"}],sx:{mb:{xs:3,md:5}}}),r.jsx(o,{})]})}export{n as T};

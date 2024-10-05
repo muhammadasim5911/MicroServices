@@ -1,0 +1,1 @@
+import{cs as a,fG as u,r as t,fe as c}from"./index-BaPXjGxN.js";function r(e){const o=a(()=>u(e)),{isStatic:s}=t.useContext(c);if(s){const[,n]=t.useState(e);t.useEffect(()=>o.on("change",n),[])}return o}export{r as u};

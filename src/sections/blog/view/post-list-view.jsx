@@ -1,153 +1,143 @@
-import { useState, useCallback } from 'react';
-
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
-import Stack from '@mui/material/Stack';
-import Button from '@mui/material/Button';
-
+import { useState } from 'react';
+import {
+  Button,
+  TextField,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  FormControl,
+  FormLabel,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+} from '@mui/material';
 import { paths } from 'src/routes/paths';
-import { RouterLink } from 'src/routes/components';
-
-import { useDebounce } from 'src/hooks/use-debounce';
-import { useSetState } from 'src/hooks/use-set-state';
-
-import { orderBy } from 'src/utils/helper';
-
-import { POST_SORT_OPTIONS } from 'src/_mock';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { useGetPosts, useSearchPosts } from 'src/actions/blog';
-
-import { Label } from 'src/components/label';
-import { Iconify } from 'src/components/iconify';
+import { z as zod } from 'zod';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
+import { EmptyContent } from 'src/components/empty-content';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 
-import { PostSort } from '../post-sort';
-import { PostSearch } from '../post-search';
-import { PostListHorizontal } from '../post-list-horizontal';
+// Schema definitions
+const emailSchema = zod
+  .string()
+  .min(1, { message: 'Email is required!' })
+  .email({ message: 'Email must be a valid email address!' });
 
-// ----------------------------------------------------------------------
+const domainSchema = zod
+  .string()
+  .min(1, { message: 'Domain is required!' })
+  .regex(/^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/, {
+    message: 'Please enter a valid domain (e.g., venndii.com)',
+  });
+
+const ConfigurationSchema = zod
+  .object({
+    value: zod.string().min(1, 'This field is required'),
+    verificationType: zod.enum(['email', 'domain']),
+  })
+  .refine(
+    (data) => {
+      if (data.verificationType === 'email') {
+        return emailSchema.safeParse(data.value).success;
+      } else {
+        return domainSchema.safeParse(data.value).success;
+      }
+    },
+    {
+      message: 'Invalid input for the selected verification type',
+      path: ['value'],
+    }
+  );
 
 export function PostListView() {
-  const [sortBy, setSortBy] = useState('latest');
+  const [openDialog, setOpenDialog] = useState(false);
 
-  const [searchQuery, setSearchQuery] = useState('');
-
-  const debouncedQuery = useDebounce(searchQuery);
-
-  const { posts, postsLoading } = useGetPosts();
-
-  const { searchResults, searchLoading } = useSearchPosts(debouncedQuery);
-
-  const filters = useSetState({ publish: 'all' });
-
-  const dataFiltered = applyFilter({ inputData: posts, filters: filters.state, sortBy });
-
-  const handleSortBy = useCallback((newValue) => {
-    setSortBy(newValue);
-  }, []);
-
-  const handleSearch = useCallback((inputValue) => {
-    setSearchQuery(inputValue);
-  }, []);
-
-  const handleFilterPublish = useCallback(
-    (event, newValue) => {
-      filters.setState({ publish: newValue });
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm({
+    resolver: zodResolver(ConfigurationSchema),
+    defaultValues: {
+      value: '',
+      verificationType: 'email',
     },
-    [filters]
-  );
+  });
+
+  const verificationType = watch('verificationType');
+
+  const onSubmit = handleSubmit(async (data) => {
+    // Handle form submission
+    console.log(data);
+    handleCloseDialog();
+  });
+
+  const handleOpenDialog = () => {
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    reset();
+  };
 
   return (
     <DashboardContent>
       <CustomBreadcrumbs
-        heading="List"
-        links={[
-          { name: 'Dashboard', href: paths.dashboard.root },
-          { name: 'Blog', href: paths.dashboard.post.root },
-          { name: 'List' },
-        ]}
-        action={
-          <Button
-            component={RouterLink}
-            href={paths.dashboard.post.new}
-            variant="contained"
-            startIcon={<Iconify icon="mingcute:add-line" />}
-          >
-            New post
-          </Button>
-        }
+        heading="Configurations"
+        links={[{ name: 'Dashboard', href: paths.dashboard.root }, { name: 'Configurations' }]}
         sx={{ mb: { xs: 3, md: 5 } }}
       />
 
-      <Stack
-        spacing={3}
-        justifyContent="space-between"
-        alignItems={{ xs: 'flex-end', sm: 'center' }}
-        direction={{ xs: 'column', sm: 'row' }}
-        sx={{ mb: { xs: 3, md: 5 } }}
-      >
-        <PostSearch
-          query={debouncedQuery}
-          results={searchResults}
-          onSearch={handleSearch}
-          loading={searchLoading}
-          hrefItem={(title) => paths.dashboard.post.details(title)}
-        />
+      <EmptyContent
+        title="No Configuration found"
+        showButton={true}
+        onButtonPress={handleOpenDialog}
+        filled
+        buttonLabel="Create new Configuration"
+        sx={{ py: 10, marginTop: 1 }}
+      />
 
-        <PostSort sort={sortBy} onSort={handleSortBy} sortOptions={POST_SORT_OPTIONS} />
-      </Stack>
-
-      <Tabs
-        value={filters.state.publish}
-        onChange={handleFilterPublish}
-        sx={{ mb: { xs: 3, md: 5 } }}
-      >
-        {['all', 'published', 'draft'].map((tab) => (
-          <Tab
-            key={tab}
-            iconPosition="end"
-            value={tab}
-            label={tab}
-            icon={
-              <Label
-                variant={((tab === 'all' || tab === filters.state.publish) && 'filled') || 'soft'}
-                color={(tab === 'published' && 'info') || 'default'}
-              >
-                {tab === 'all' && posts.length}
-
-                {tab === 'published' && posts.filter((post) => post.publish === 'published').length}
-
-                {tab === 'draft' && posts.filter((post) => post.publish === 'draft').length}
-              </Label>
-            }
-            sx={{ textTransform: 'capitalize' }}
+      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+        <DialogTitle>Create New Configuration</DialogTitle>
+        <DialogContent>
+          <TextField
+            {...register('value')}
+            autoFocus
+            margin="dense"
+            id="value"
+            label={verificationType === 'email' ? 'Email Address' : 'Domain'}
+            type={verificationType === 'email' ? 'email' : 'text'}
+            fullWidth
+            variant="outlined"
+            error={!!errors.value}
+            helperText={errors.value?.message}
+            sx={{ mb: 2 }}
           />
-        ))}
-      </Tabs>
-
-      <PostListHorizontal posts={dataFiltered} loading={postsLoading} />
+          <FormControl component="fieldset">
+            <FormLabel component="legend">Verification Type</FormLabel>
+            <RadioGroup
+              {...register('verificationType')}
+              aria-label="verification-type"
+              name="verificationType"
+            >
+              <FormControlLabel value="email" control={<Radio />} label="Verify Email" />
+              <FormControlLabel value="domain" control={<Radio />} label="Verify Domain" />
+            </RadioGroup>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button onClick={onSubmit} variant="contained" disabled={isSubmitting}>
+            Create
+          </Button>
+        </DialogActions>
+      </Dialog>
     </DashboardContent>
   );
 }
-
-const applyFilter = ({ inputData, filters, sortBy }) => {
-  const { publish } = filters;
-
-  if (sortBy === 'latest') {
-    inputData = orderBy(inputData, ['createdAt'], ['desc']);
-  }
-
-  if (sortBy === 'oldest') {
-    inputData = orderBy(inputData, ['createdAt'], ['asc']);
-  }
-
-  if (sortBy === 'popular') {
-    inputData = orderBy(inputData, ['totalViews'], ['desc']);
-  }
-
-  if (publish !== 'all') {
-    inputData = inputData.filter((post) => post.publish === publish);
-  }
-
-  return inputData;
-};
