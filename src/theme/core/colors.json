@@ -1,7 +1,8 @@
 {
   "primary": {
     "lighter": "#DB7BB0",
-    "light": "#DB7BB0",
+    "light": "#DB7BD0",
+
     "main": "#E61DAB",
     "dark": "#F1136C",
     "darker": "#DC1DC8",
