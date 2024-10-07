@@ -5,7 +5,7 @@ import packageJson from '../package.json';
 // ----------------------------------------------------------------------
 
 export const CONFIG = {
-  appName: 'Minimal UI',
+  appName: 'Public circle',
   appVersion: packageJson.version,
   serverUrl: 'https://api.publiccircles.com',
   assetsDir: import.meta.env.VITE_ASSETS_DIR ?? '',

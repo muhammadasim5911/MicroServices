@@ -75,4 +75,18 @@ export async function CreateFilter(params) {
 
   return res.data;
 }
+export async function getUserCount(fieldType, values) {
+  try {
+    const response = await axios.post('/company-users/get-filter-count', {
+      filters: {
+        [fieldType]: Array.isArray(values) ? values : [values],
+      },
+    });
+    return response.data?.data[0]?.filterCount;
+  } catch (error) {
+    console.error('Error fetching user count:', error);
+    toast.error('Failed to fetch user count');
+    return null;
+  }
+}
 // ----------------------------------------------------------------------

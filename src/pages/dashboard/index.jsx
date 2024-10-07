@@ -31,7 +31,7 @@ import { OverviewAppView } from 'src/sections/overview/app/view';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LoadingButton } from '@mui/lab';
 import { label } from 'yet-another-react-lightbox';
-import { getAllFilters } from 'src/actions/filters';
+import { getAllFilters, getUserCount } from 'src/actions/filters';
 
 // ----------------------------------------------------------------------
 
@@ -92,12 +92,15 @@ export default function OverviewAppPage() {
             {label}: {value[0]} - {value[1]}
           </Typography>
           <LoadingButton
-            onClick={() => {
+            onClick={async () => {
+              const count = await getUserCount(item?.filterKey, value);
+
               let valuestoSend = [
                 ...selectedGroups,
                 {
-                  fieldType: 'RANGE_SLIDER',
+                  fieldType: item?.filterKey,
                   values: `Range Slider (${value[0]} - ${value[1]})`,
+                  count: count,
                 },
               ];
 
@@ -138,16 +141,20 @@ export default function OverviewAppPage() {
               <Box display="flex" justifyContent="space-between" alignItems="center">
                 <Typography variant="subtitle2">{item.filterLabel}</Typography>
                 <LoadingButton
-                  onClick={() => {
+                  onClick={async () => {
                     if (!formValues[fieldName]) {
                       toast.error('Please write something first to add!');
                       return;
                     }
+
+                    const count = await getUserCount(item?.filterKey, formValues[fieldName]);
+
                     let valuestoSend = [
                       ...selectedGroups,
                       {
-                        fieldType: 'Manual',
+                        fieldType: item?.filterKey,
                         values: formValues[fieldName],
+                        count: count,
                       },
                     ];
 
@@ -179,16 +186,20 @@ export default function OverviewAppPage() {
               >
                 <Typography variant="subtitle2">{item.filterLabel}</Typography>
                 <LoadingButton
-                  onClick={() => {
+                  onClick={async () => {
                     if (!selected) {
                       toast.error('Please select atleast one option!');
                       return;
                     }
+
+                    const count = await getUserCount(item?.filterKey, selected);
+
                     let valuestoSend = [
                       ...selectedGroups,
                       {
-                        fieldType: 'RADIO',
+                        fieldType: item?.filterKey,
                         values: selected,
+                        count: count,
                       },
                     ];
 
@@ -231,16 +242,20 @@ export default function OverviewAppPage() {
               >
                 <Typography variant="subtitle2">{item.filterLabel}</Typography>
                 <LoadingButton
-                  onClick={() => {
+                  onClick={async () => {
                     if (!formValues[fieldName]) {
                       toast.error('Please select an option!');
                       return;
                     }
+
+                    const count = await getUserCount(item?.filterKey, formValues[fieldName]);
+
                     let valuestoSend = [
                       ...selectedGroups,
                       {
-                        fieldType: 'DROP_DOWN',
+                        fieldType: item?.filterKey,
                         values: formValues[fieldName],
+                        count: count,
                       },
                     ];
 
@@ -293,16 +308,20 @@ export default function OverviewAppPage() {
                 <Box display="flex" justifyContent="space-between" alignItems="center">
                   <Typography variant="subtitle2">{item.filterLabel}</Typography>
                   <LoadingButton
-                    onClick={() => {
+                    onClick={async () => {
                       if (!formValues[fieldName] || formValues[fieldName].length === 0) {
                         toast.error('Please select an option!');
                         return;
                       }
+
+                      const count = await getUserCount(item?.filterKey, formValues[fieldName]);
+
                       let valuestoSend = [
                         ...selectedGroups,
                         {
-                          fieldType: 'CHECK_BOX',
+                          fieldType: item?.filterKey,
                           values: formValues[fieldName],
+                          count: count,
                         },
                       ];
 
@@ -400,13 +419,18 @@ export default function OverviewAppPage() {
       <Divider />
       <Stack spacing={3} sx={{ p: 3 }}>
         {selectedGroups.map((item) => (
-          <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Box
+            key={item.fieldType}
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
             <Typography width={'20%'} variant="subtitle2" alignSelf="center">
-              {item.values}
+              {`${item.values}-(${item.count})`}
             </Typography>
 
             <Typography variant="subtitle2" alignSelf="center">
-              {item.fieldType}
+              {`${item.fieldType}`}
             </Typography>
             <LoadingButton
               onClick={() => {
@@ -424,6 +448,18 @@ export default function OverviewAppPage() {
             </LoadingButton>
           </Box>
         ))}
+
+        {/* Total count and message */}
+        {selectedGroups.length > 0 && (
+          <Box mt={2}>
+            <Divider />
+
+            <Typography variant="body2" color="text.secondary" mt={1}>
+              This message will be sent to{' '}
+              {selectedGroups.reduce((total, item) => total + item.count, 0)} users.
+            </Typography>
+          </Box>
+        )}
       </Stack>
     </Card>
   );

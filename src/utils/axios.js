@@ -35,6 +35,10 @@ export const endpoints = {
     filterTypes: '/company-users/possible-filter-keys/',
     filters: '/filters',
     filterValues: '/company-users/possible-filter-values',
+    filterCount: '/company-users/get-filter-count',
+  },
+  configurations: {
+    emailConfig: '/configurations/email',
   },
   user: {
     getAllUsers: '/company-users/all?pageNumber=1&pageSize=10',
