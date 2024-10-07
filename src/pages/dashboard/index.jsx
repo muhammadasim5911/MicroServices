@@ -16,6 +16,7 @@ import {
   Stack,
   TextField,
   Typography,
+  CardContent,
 } from '@mui/material';
 import axios from 'axios';
 import { useEffect, useMemo, useState } from 'react';
@@ -395,18 +396,24 @@ export default function OverviewAppPage() {
     </Stack>
   );
   const renderDetails = (
-    <Card>
+    <>
       <CardHeader
         title="Filters"
         subheader="Add filters to add specified group of users..."
-        sx={{ mb: 3 }}
+        sx={{ mb: 1 }}
       />
 
       <Divider />
-      <Stack spacing={3} sx={{ p: 3 }}>
-        {allFilters ? allFilters.map((item) => renderDynamicField(item)) : null}
+      <Stack spacing={2} sx={{ p: 1 }}>
+        {allFilters
+          ? allFilters.map((item) => (
+              <Card key={item.filterLabel}>
+                <CardContent>{renderDynamicField(item)}</CardContent>
+              </Card>
+            ))
+          : null}
       </Stack>
-    </Card>
+    </>
   );
   const rendergroups = (
     <Card>
