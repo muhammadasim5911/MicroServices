@@ -39,8 +39,8 @@ export const endpoints = {
   },
   configurations: {
     configuration: '/configuration',
-    emailConfig: '/configurations/email',
-    domainVerification: '/configuration/email/domain-name',
+    emailCreation: '/configuration/email/address',
+    domainCreation: '/configuration/email/domain-name',
   },
   user: {
     getAllUsers: '/company-users/all?pageNumber=1&pageSize=10',

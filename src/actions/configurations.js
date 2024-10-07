@@ -22,7 +22,7 @@ export function getAllConfigurations() {
 
   const memoizedValue = useMemo(
     () => ({
-      allConfigurations: data?.data?.emailConfigurations?.domains,
+      allConfigurations: data?.data?.emailConfigurations,
     }),
     [data]
   );
@@ -30,7 +30,23 @@ export function getAllConfigurations() {
   return memoizedValue;
 }
 export async function verifyDomain(params) {
-  const url = endpoints.configurations.domainVerification;
+  const url = endpoints.configurations.domainCreation;
+
+  /**
+   * Work on server
+   */
+  //   const data = { params };
+  const res = await axios.post(url, params);
+
+  /**
+   * Work in local
+   */
+
+  return res.data;
+}
+
+export async function verifyEmail(params) {
+  const url = endpoints.configurations.emailCreation;
 
   /**
    * Work on server

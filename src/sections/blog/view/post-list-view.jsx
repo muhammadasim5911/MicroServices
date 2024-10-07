@@ -28,6 +28,8 @@ import {
   TableHead,
   TableRow,
   Paper,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -39,13 +41,14 @@ import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 import { EmptyContent } from 'src/components/empty-content';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { getAllConfigurations, verifyDomain } from 'src/actions/configurations';
+import { getAllConfigurations, verifyDomain, verifyEmail } from 'src/actions/configurations';
 import DeleteIcon from '@mui/icons-material/Delete'; // Add this import
 import RefreshIcon from '@mui/icons-material/Refresh'; // Add this import
 import { endpoints } from 'src/utils/axios';
 import { mutate } from 'swr';
 import { keyframes } from '@emotion/react';
 import AddIcon from '@mui/icons-material/Add';
+import VisibilityIcon from '@mui/icons-material/Visibility'; // Add this import at the top of the file
 
 const spin = keyframes`
   from {
@@ -103,6 +106,7 @@ export function PostListView() {
   const [isVerifying, setIsVerifying] = useState(false);
   const [copiedField, setCopiedField] = useState(null);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('email');
   const { allConfigurations } = getAllConfigurations();
 
   const {
@@ -133,7 +137,8 @@ export function PostListView() {
       } else {
         // Handle email verification if needed
         // For now, we'll just simulate a successful email verification
-        setVerificationResult({ message: 'Email verification initiated.' });
+        const result = await verifyEmail({ emailAddress: data.value });
+        setVerificationResult(result);
       }
       setConfigDetails(data);
       handleNext(); // Move to the third step only if there's no error
@@ -191,6 +196,14 @@ export function PostListView() {
       }, 1000);
     }
   };
+
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
+
+  const filteredConfigurations =
+    activeTab === 'email' ? allConfigurations?.addresses : allConfigurations?.domains;
+
   return (
     <DashboardContent>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -216,13 +229,18 @@ export function PostListView() {
         </Box>
       </Box>
 
-      {allConfigurations?.length === 0 ? (
+      <Tabs value={activeTab} onChange={handleTabChange} sx={{ mb: 3 }}>
+        <Tab label="Email Configurations" value="email" />
+        <Tab label="Domain Configurations" value="domain" />
+      </Tabs>
+
+      {filteredConfigurations?.length === 0 ? (
         <EmptyContent
-          title="No Configuration found"
+          title={`No ${activeTab === 'email' ? 'Email' : 'Domain'} Configuration found`}
           showButton={true}
           onButtonPress={handleOpenDialog}
           filled
-          buttonLabel="New Configuration"
+          buttonLabel={`New ${activeTab === 'email' ? 'Email' : 'Domain'} Configuration`}
           sx={{ py: 10, marginTop: 1 }}
         />
       ) : (
@@ -230,28 +248,43 @@ export function PostListView() {
           <Table sx={{ minWidth: '100%' }} aria-label="configuration table">
             <TableHead>
               <TableRow>
-                <TableCell>Name</TableCell>
-
-                <TableCell align="center">Verified</TableCell>
+                <TableCell>{activeTab === 'email' ? 'Email Address' : 'Domain Name'}</TableCell>
+                <TableCell align="center">Status</TableCell>
                 <TableCell align="right">Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {allConfigurations?.map((config) => (
-                <TableRow key={config.emailDomain}>
+              {filteredConfigurations?.map((config) => (
+                <TableRow key={config.id}>
                   <TableCell component="th" scope="row">
-                    {config.emailDomain}
+                    {activeTab === 'email' ? config.emailAddress : config.emailDomain}
                   </TableCell>
-
                   <TableCell align="center">
                     {config.isVerified ? (
-                      <CheckCircleIcon color="success" />
+                      <Box display="flex" alignItems="center" justifyContent="center">
+                        <CheckCircleIcon color="success" sx={{ mr: 1 }} />
+                        <Typography variant="body2" color="success.main">
+                          Verified
+                        </Typography>
+                      </Box>
                     ) : (
-                      <CancelIcon color="error" />
+                      <Box display="flex" alignItems="center" justifyContent="center">
+                        <CancelIcon color="error" sx={{ mr: 1 }} />
+                        <Typography variant="body2" color="error.main">
+                          Unverified
+                        </Typography>
+                      </Box>
                     )}
                   </TableCell>
                   <TableCell align="right">
-                    <IconButton color="error" size="small" onClick={() => {}}>
+                    <IconButton
+                      color="default"
+                      size="small"
+                      onClick={() => handleViewDetails(config)}
+                    >
+                      <VisibilityIcon sx={{ color: 'text.secondary' }} />
+                    </IconButton>
+                    <IconButton color="error" size="small" onClick={() => handleDelete(config)}>
                       <DeleteIcon />
                     </IconButton>
                   </TableCell>
