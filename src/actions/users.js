@@ -37,7 +37,7 @@ export async function uploadCSVFile(file) {
   }
 
   const formData = new FormData();
-  formData.append('file', file);
+  formData.append('csvFile', file);
 
   try {
     const { data } = await axios.post(endpoints.user.uploadCSV, formData, {
