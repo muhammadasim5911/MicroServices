@@ -15,9 +15,22 @@ const swrOptions = {
 };
 
 // ----------------------------------------------------------------------
+export function getAllConfigurations() {
+  const url = `${endpoints.configurations.configuration}`;
 
-export async function SubmitVerification(params) {
-  const url = endpoints.filters?.filters;
+  const { data } = useSWR(url, fetcher, swrOptions);
+
+  const memoizedValue = useMemo(
+    () => ({
+      allConfigurations: data?.data?.emailConfigurations?.domains,
+    }),
+    [data]
+  );
+
+  return memoizedValue;
+}
+export async function verifyDomain(params) {
+  const url = endpoints.configurations.domainVerification;
 
   /**
    * Work on server

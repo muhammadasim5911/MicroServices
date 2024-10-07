@@ -38,7 +38,9 @@ export const endpoints = {
     filterCount: '/company-users/get-filter-count',
   },
   configurations: {
+    configuration: '/configuration',
     emailConfig: '/configurations/email',
+    domainVerification: '/configuration/email/domain-name',
   },
   user: {
     getAllUsers: '/company-users/all?pageNumber=1&pageSize=10',

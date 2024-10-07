@@ -146,7 +146,11 @@ export const navData = [
         ],
       },
       { title: 'Api Key', path: paths.dashboard.fileManager, icon: ICONS.lock },
-      { title: 'Configurations', path: paths.dashboard.post.root, icon: ICONS.blog },
+      {
+        title: 'Configurations',
+        path: paths.dashboard.post.root,
+        icon: ICONS.blog,
+      },
 
       // { title: 'File manager', path: paths.dashboard.fileManager, icon: ICONS.folder },
       // {
