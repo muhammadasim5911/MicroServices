@@ -29,6 +29,7 @@ export function getAllConfigurations() {
 
   return memoizedValue;
 }
+
 export async function verifyDomain(params) {
   const url = endpoints.configurations.domainCreation;
 
@@ -57,6 +58,21 @@ export async function verifyEmail(params) {
   /**
    * Work in local
    */
+
+  return res.data;
+}
+
+export async function deleteEmailConfiguration(email) {
+  const url = `${endpoints.configurations.deleteEmail}${email}`;
+
+  const res = await axios.delete(url);
+
+  return res.data;
+}
+export async function deleteDomainConfiguration(domain) {
+  const url = `${endpoints.configurations.deleteDomain}${domain}`;
+
+  const res = await axios.delete(url);
 
   return res.data;
 }

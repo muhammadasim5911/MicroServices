@@ -41,6 +41,8 @@ export const endpoints = {
     configuration: '/configuration',
     emailCreation: '/configuration/email/address',
     domainCreation: '/configuration/email/domain-name',
+    deleteEmail: '/configuration/email-address/',
+    deleteDomain: '/configuration/email-domain/',
   },
   user: {
     getAllUsers: '/company-users/all?pageNumber=1&pageSize=10',

@@ -41,7 +41,13 @@ import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 import { EmptyContent } from 'src/components/empty-content';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { getAllConfigurations, verifyDomain, verifyEmail } from 'src/actions/configurations';
+import {
+  deleteDomainConfiguration,
+  deleteEmailConfiguration,
+  getAllConfigurations,
+  verifyDomain,
+  verifyEmail,
+} from 'src/actions/configurations';
 import DeleteIcon from '@mui/icons-material/Delete'; // Add this import
 import RefreshIcon from '@mui/icons-material/Refresh'; // Add this import
 import { endpoints } from 'src/utils/axios';
@@ -49,6 +55,8 @@ import { mutate } from 'swr';
 import { keyframes } from '@emotion/react';
 import AddIcon from '@mui/icons-material/Add';
 import VisibilityIcon from '@mui/icons-material/Visibility'; // Add this import at the top of the file
+import DialogContentText from '@mui/material/DialogContentText';
+import { toast } from 'src/components/snackbar';
 
 const spin = keyframes`
   from {
@@ -108,6 +116,8 @@ export function PostListView() {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('email');
   const { allConfigurations } = getAllConfigurations();
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [configToDelete, setConfigToDelete] = useState(null);
 
   const {
     register,
@@ -204,6 +214,38 @@ export function PostListView() {
   const filteredConfigurations =
     activeTab === 'email' ? allConfigurations?.addresses : allConfigurations?.domains;
 
+  const handleOpenDeleteModal = (config) => {
+    setConfigToDelete(config);
+    setDeleteModalOpen(true);
+  };
+
+  const handleDelete = async () => {
+    setDeleteModalOpen(false);
+    if (configToDelete) {
+      if (activeTab === 'email') {
+        const res = await deleteEmailConfiguration(configToDelete.emailAddress);
+        if (res.success) {
+          toast.success('Email configuration deleted successfully');
+          await mutate(endpoints.configurations.configuration);
+        } else {
+          toast.error('Error deleting email configuration:', res.message);
+        }
+      } else {
+        const res = await deleteDomainConfiguration(configToDelete.emailDomain);
+        if (res.success) {
+          toast.success('Domain configuration deleted successfully');
+          await mutate(endpoints.configurations.configuration);
+        } else {
+          toast.error('Error deleting domain configuration:', res.message);
+        }
+        // Uncomment the line below when the deleteDomainConfiguration function is implemented
+        // deleteDomainConfiguration(configToDelete.emailDomain);
+      }
+    }
+    setDeleteModalOpen(false);
+    setConfigToDelete(null);
+  };
+
   return (
     <DashboardContent>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -250,7 +292,7 @@ export function PostListView() {
               <TableRow>
                 <TableCell>{activeTab === 'email' ? 'Email Address' : 'Domain Name'}</TableCell>
                 <TableCell align="center">Status</TableCell>
-                <TableCell align="right">Actions</TableCell>
+                <TableCell align="right"></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -282,9 +324,15 @@ export function PostListView() {
                       size="small"
                       onClick={() => handleViewDetails(config)}
                     >
-                      <VisibilityIcon sx={{ color: 'text.secondary' }} />
+                      {activeTab === 'email' ? null : (
+                        <VisibilityIcon sx={{ color: 'text.secondary' }} />
+                      )}
                     </IconButton>
-                    <IconButton color="error" size="small" onClick={() => handleDelete(config)}>
+                    <IconButton
+                      color="error"
+                      size="small"
+                      onClick={() => handleOpenDeleteModal(config)}
+                    >
                       <DeleteIcon />
                     </IconButton>
                   </TableCell>
@@ -301,8 +349,10 @@ export function PostListView() {
         fullWidth
         disableEscapeKeyDown
         onClose={(event, reason) => {
+          handleCloseDialog();
+
           if (reason !== 'backdropClick') {
-            handleCloseDialog();
+            // handleCloseDialog();
           }
         }}
       >
@@ -431,6 +481,31 @@ export function PostListView() {
               {configDetails.configurationType === 'domain' ? 'I have added' : 'I have verified'}
             </Button>
           )}
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{'Confirm Deletion'}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {configToDelete &&
+              (activeTab === 'email'
+                ? `Are you sure you want to delete the email configuration for ${configToDelete.emailAddress}?`
+                : `Are you sure you want to delete the domain configuration for ${configToDelete.emailDomain}?`)}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button variant="contained" onClick={() => setDeleteModalOpen(false)}>
+            Cancel
+          </Button>
+          <Button variant="contained" onClick={handleDelete} color="error" autoFocus>
+            Yes, Delete
+          </Button>
         </DialogActions>
       </Dialog>
     </DashboardContent>
