@@ -142,7 +142,7 @@ export function PostListView() {
     setIsVerifying(true);
     try {
       if (data.configurationType === 'domain') {
-        const result = await verifyDomain({ domainName: data.value });
+        const result = await verifyDomain({ emailDomain: data.value });
         setVerificationResult(result);
       } else {
         // Handle email verification if needed

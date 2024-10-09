@@ -96,7 +96,7 @@ export function TourNewEditForm({ currentTour }) {
   });
 
   const [valuesData, setValuesData] = useState([]);
-  const { filterKeysData } = getFilterKeys(user?.company?._id);
+  const { filterKeysData } = getFilterKeys();
 
   const {
     watch,
@@ -113,7 +113,7 @@ export function TourNewEditForm({ currentTour }) {
       reset(defaultValues);
     }
   }, [currentTour, defaultValues, reset]);
-  const { filterValues } = getFilterValues(user?.company?._id, values.filterKey);
+  const { filterValues } = getFilterValues(values.filterKey);
 
   useEffect(() => {
     if (filterValues?.data?.length) {
@@ -268,17 +268,18 @@ export function TourNewEditForm({ currentTour }) {
             onChange={async (event, newValue) => {
               setValue('filterKey', newValue.name);
               setValue('values', []);
-              // console.log('🚀 ~ TourNewEditForm ~ filterValues:', filterValues);
-
-              // setValuesData(getFilterValues(user?.company?._id, newValue.name));
             }}
             name="filterKey"
             placeholder="Select filter key"
-            options={filterKeysData?.data.map((value) => ({
-              label: value, // The display label
-              value: value,
-              name: value, // The actual value
-            }))}
+            options={
+              filterKeysData
+                ? filterKeysData?.data.map((value) => ({
+                    label: value, // The display label
+                    value: value,
+                    name: value, // The actual value
+                  }))
+                : []
+            }
             getOptionLabel={(option) => option.name || ''}
             isOptionEqualToValue={(option, value) => option.name === value}
             renderOption={(props, tourGuide) => (

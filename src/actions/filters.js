@@ -16,8 +16,8 @@ const swrOptions = {
 
 // ----------------------------------------------------------------------
 
-export function getFilterKeys(companyId) {
-  const url = `${endpoints.filters.filterTypes}${companyId}`;
+export function getFilterKeys() {
+  const url = `${endpoints.filters.filterTypes}`;
 
   const { data } = useSWR(url, fetcher, swrOptions);
 
@@ -31,8 +31,8 @@ export function getFilterKeys(companyId) {
   return memoizedValue;
 }
 
-export function getFilterValues(companyId, key) {
-  const url = `${endpoints.filters.filterValues}?companyId=${companyId}&key=${key}`;
+export function getFilterValues(key) {
+  const url = `${endpoints.filters.filterValues}?key=${key}`;
 
   const { data } = useSWR(url, fetcher, swrOptions);
 
@@ -66,8 +66,7 @@ export async function CreateFilter(params) {
   /**
    * Work on server
    */
-  //   const data = { params };
-  const res = await axios.post(url, params);
+  const res = await axios.post(url, data);
 
   /**
    * Work in local
