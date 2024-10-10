@@ -114,10 +114,9 @@ export function PostListView() {
   const [isVerifying, setIsVerifying] = useState(false);
   const [copiedField, setCopiedField] = useState(null);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('email');
-  const { allConfigurations } = getAllConfigurations();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [configToDelete, setConfigToDelete] = useState(null);
+  const [activeTab, setActiveTab] = useState(0);
 
   const {
     register,
@@ -207,12 +206,13 @@ export function PostListView() {
     }
   };
 
-  const handleTabChange = (event, newValue) => {
-    setActiveTab(newValue);
-  };
+  const { allConfigurations } = getAllConfigurations();
 
-  const filteredConfigurations =
-    activeTab === 'email' ? allConfigurations?.addresses : allConfigurations?.domains;
+  // Combine email and domain configurations
+  const allConfigurationsCombined = [
+    ...(allConfigurations?.addresses || []),
+    ...(allConfigurations?.domains || []),
+  ];
 
   const handleOpenDeleteModal = (config) => {
     setConfigToDelete(config);
@@ -222,21 +222,22 @@ export function PostListView() {
   const handleDelete = async () => {
     setDeleteModalOpen(false);
     if (configToDelete) {
-      if (activeTab === 'email') {
+      if (configToDelete.emailAddress) {
         const res = await deleteEmailConfiguration(configToDelete.emailAddress);
-        if (res.success) {
+        console.log('🚀 ~ handleDelete ~ res:', res);
+        if (res.status == 200) {
           toast.success('Email configuration deleted successfully');
           await mutate(endpoints.configurations.configuration);
         } else {
-          toast.error('Error deleting email configuration:', res.message);
+          toast.error('Error deleting email configuration:', res.data?.message);
         }
       } else {
         const res = await deleteDomainConfiguration(configToDelete.emailDomain);
-        if (res.success) {
+        if (res.status == 200) {
           toast.success('Domain configuration deleted successfully');
           await mutate(endpoints.configurations.configuration);
         } else {
-          toast.error('Error deleting domain configuration:', res.message);
+          toast.error('Error deleting domain configuration:', res.data?.message);
         }
         // Uncomment the line below when the deleteDomainConfiguration function is implemented
         // deleteDomainConfiguration(configToDelete.emailDomain);
@@ -244,6 +245,10 @@ export function PostListView() {
     }
     setDeleteModalOpen(false);
     setConfigToDelete(null);
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
   };
 
   return (
@@ -255,7 +260,7 @@ export function PostListView() {
         />
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenDialog}>
-            New Configuration
+            New Email Configuration
           </Button>
           <Tooltip title={isRefreshing ? 'Refreshing...' : 'Refresh configurations'}>
             <IconButton
@@ -272,17 +277,17 @@ export function PostListView() {
       </Box>
 
       <Tabs value={activeTab} onChange={handleTabChange} sx={{ mb: 3 }}>
-        <Tab label="Email Configurations" value="email" />
-        <Tab label="Domain Configurations" value="domain" />
+        <Tab label="Email Configurations" />
+        {/* Add more tabs here in the future */}
       </Tabs>
 
-      {filteredConfigurations?.length === 0 ? (
+      {allConfigurationsCombined.length === 0 ? (
         <EmptyContent
-          title={`No ${activeTab === 'email' ? 'Email' : 'Domain'} Configuration found`}
+          title="No Configurations found"
           showButton={true}
           onButtonPress={handleOpenDialog}
           filled
-          buttonLabel={`New ${activeTab === 'email' ? 'Email' : 'Domain'} Configuration`}
+          buttonLabel="New Email Configuration"
           sx={{ py: 10, marginTop: 1 }}
         />
       ) : (
@@ -290,49 +295,57 @@ export function PostListView() {
           <Table sx={{ minWidth: '100%' }} aria-label="configuration table">
             <TableHead>
               <TableRow>
-                <TableCell>{activeTab === 'email' ? 'Email Address' : 'Domain Name'}</TableCell>
+                <TableCell>Name</TableCell>
                 <TableCell align="center">Status</TableCell>
-                <TableCell align="right"></TableCell>
+                <TableCell align="center">Kind</TableCell>
+                <TableCell align="right">Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredConfigurations?.map((config) => (
+              {allConfigurationsCombined.map((config) => (
                 <TableRow key={config.id}>
                   <TableCell component="th" scope="row">
-                    {activeTab === 'email' ? config.emailAddress : config.emailDomain}
+                    {config.emailAddress || config.emailDomain}
                   </TableCell>
                   <TableCell align="center">
-                    {config.isVerified ? (
-                      <Box display="flex" alignItems="center" justifyContent="center">
-                        <CheckCircleIcon color="success" sx={{ mr: 1 }} />
-                        <Typography variant="body2" color="success.main">
-                          Verified
-                        </Typography>
-                      </Box>
-                    ) : (
-                      <Box display="flex" alignItems="center" justifyContent="center">
-                        <CancelIcon color="error" sx={{ mr: 1 }} />
-                        <Typography variant="body2" color="error.main">
-                          Unverified
-                        </Typography>
-                      </Box>
-                    )}
+                    <Box
+                      sx={{
+                        width: 100,
+                        display: 'inline-flex', // Changed from 'inline-block' to 'inline-flex'
+                        justifyContent: 'center', // Center content horizontally
+                        alignItems: 'center', // Center content vertically
+                        px: 2,
+                        py: 0.5,
+                        borderRadius: 5,
+                        bgcolor: config.isVerified ? 'success.lighter' : 'error.lighter',
+                        border: 1,
+                        borderColor: config.isVerified ? 'success.lighter' : 'error.lighter',
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontSize: 12,
+                          color: 'text.primary',
+                          fontWeight: 'medium',
+                          textAlign: 'center', // Ensure text is centered
+                          width: '100%', // Take full width of parent
+                        }}
+                      >
+                        {config.isVerified ? 'Verified' : 'Unverified'}
+                      </Typography>
+                    </Box>
                   </TableCell>
+                  <TableCell align="center">{config.emailAddress ? 'Email' : 'Domain'}</TableCell>
                   <TableCell align="right">
                     <IconButton
                       color="default"
                       size="small"
                       onClick={() => handleViewDetails(config)}
                     >
-                      {activeTab === 'email' ? null : (
-                        <VisibilityIcon sx={{ color: 'text.secondary' }} />
-                      )}
+                      <VisibilityIcon sx={{ color: 'text.secondary' }} />
                     </IconButton>
-                    <IconButton
-                      color="error"
-                      size="small"
-                      onClick={() => handleOpenDeleteModal(config)}
-                    >
+                    <IconButton onClick={() => handleOpenDeleteModal(config)}>
                       <DeleteIcon />
                     </IconButton>
                   </TableCell>
@@ -356,7 +369,7 @@ export function PostListView() {
           }
         }}
       >
-        <DialogTitle>Create New Configuration</DialogTitle>
+        <DialogTitle>Create Email Configuration</DialogTitle>
         <DialogContent>
           <Stepper activeStep={activeStep} sx={{ mb: 3 }}>
             <Step>
@@ -422,37 +435,62 @@ export function PostListView() {
               </Box>
 
               {configDetails.configurationType === 'domain' && verificationResult.data && (
-                <>
-                  <Box display="flex" alignItems="center" mb={1}>
-                    <Typography variant="body2" sx={{ mr: 1 }}>
-                      Name: {verificationResult.data.Name}
-                    </Typography>
-                    <Tooltip title={copiedField === 'name' ? 'Copied!' : 'Copy to clipboard'}>
-                      <IconButton
-                        onClick={() => handleCopy(verificationResult.data.Name, 'name')}
-                        size="small"
-                      >
-                        <ContentCopyIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                  <Typography variant="body2" mb={1}>
-                    Type: {verificationResult.data.Type}
-                  </Typography>
-                  <Box display="flex" alignItems="center">
-                    <Typography variant="body2" sx={{ mr: 1 }}>
-                      Value: {verificationResult.data.Value}
-                    </Typography>
-                    <Tooltip title={copiedField === 'value' ? 'Copied!' : 'Copy to clipboard'}>
-                      <IconButton
-                        onClick={() => handleCopy(verificationResult.data.Value, 'value')}
-                        size="small"
-                      >
-                        <ContentCopyIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                </>
+                <TableContainer component={Paper} sx={{ mt: 2 }}>
+                  <Table size="small">
+                    <TableBody>
+                      <TableRow>
+                        <TableCell component="th" scope="row" sx={{ fontWeight: 'bold' }}>
+                          Name
+                        </TableCell>
+                        <TableCell>
+                          <Box display="flex" alignItems="center">
+                            <Typography variant="body2" sx={{ mr: 1 }}>
+                              {verificationResult.data.Name}
+                            </Typography>
+                            <Tooltip
+                              title={copiedField === 'name' ? 'Copied!' : 'Copy to clipboard'}
+                            >
+                              <IconButton
+                                onClick={() => handleCopy(verificationResult.data.Name, 'name')}
+                                size="small"
+                              >
+                                <ContentCopyIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell component="th" scope="row" sx={{ fontWeight: 'bold' }}>
+                          Type
+                        </TableCell>
+                        <TableCell>{verificationResult.data.Type}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell component="th" scope="row" sx={{ fontWeight: 'bold' }}>
+                          Value
+                        </TableCell>
+                        <TableCell>
+                          <Box display="flex" alignItems="center">
+                            <Typography variant="body2" sx={{ mr: 1 }}>
+                              {verificationResult.data.Value}
+                            </Typography>
+                            <Tooltip
+                              title={copiedField === 'value' ? 'Copied!' : 'Copy to clipboard'}
+                            >
+                              <IconButton
+                                onClick={() => handleCopy(verificationResult.data.Value, 'value')}
+                                size="small"
+                              >
+                                <ContentCopyIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
               )}
             </>
           )}
@@ -494,7 +532,7 @@ export function PostListView() {
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
             {configToDelete &&
-              (activeTab === 'email'
+              (configToDelete.emailAddress
                 ? `Are you sure you want to delete the email configuration for ${configToDelete.emailAddress}?`
                 : `Are you sure you want to delete the domain configuration for ${configToDelete.emailDomain}?`)}
           </DialogContentText>

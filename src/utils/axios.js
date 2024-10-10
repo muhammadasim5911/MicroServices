@@ -38,9 +38,10 @@ export const endpoints = {
     filterCount: '/company-users/get-filter-count',
   },
   configurations: {
+    verifiedEmails: '/configuration/email/verified-addresses',
     configuration: '/configuration',
     emailCreation: '/configuration/email/address',
-    domainCreation: '/configuration/email/domain-name',
+    domainCreation: '/configuration/email/domain',
     deleteEmail: '/configuration/email-address/',
     deleteDomain: '/configuration/email-domain/',
   },

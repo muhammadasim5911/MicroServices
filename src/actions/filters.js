@@ -59,14 +59,27 @@ export function getAllFilters() {
 
   return memoizedValue;
 }
+export function getVerifiedEmails() {
+  const url = `${endpoints.configurations.verifiedEmails}`;
 
+  const { data } = useSWR(url, fetcher, swrOptions);
+
+  const memoizedValue = useMemo(
+    () => ({
+      verifiedEmails: data?.data,
+    }),
+    [data]
+  );
+
+  return memoizedValue;
+}
 export async function CreateFilter(params) {
   const url = endpoints.filters?.filters;
 
   /**
    * Work on server
    */
-  const res = await axios.post(url, data);
+  const res = await axios.post(url, params);
 
   /**
    * Work in local

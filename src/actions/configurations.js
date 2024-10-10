@@ -67,13 +67,13 @@ export async function deleteEmailConfiguration(email) {
 
   const res = await axios.delete(url);
 
-  return res.data;
+  return res;
 }
 export async function deleteDomainConfiguration(domain) {
   const url = `${endpoints.configurations.deleteDomain}${domain}`;
 
   const res = await axios.delete(url);
 
-  return res.data;
+  return res;
 }
 // ----------------------------------------------------------------------
