@@ -320,9 +320,10 @@ export function PostListView() {
             <TableHead>
               <TableRow>
                 <TableCell>Name</TableCell>
-                <TableCell align="center">Status</TableCell>
                 <TableCell align="center">Kind</TableCell>
-                <TableCell align="right">Actions</TableCell>
+
+                <TableCell align="center">Status</TableCell>
+                <TableCell align="right"></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -331,6 +332,8 @@ export function PostListView() {
                   <TableCell component="th" scope="row">
                     {config.emailAddress || config.emailDomain}
                   </TableCell>
+                  <TableCell align="center">{config.emailAddress ? 'Email' : 'Domain'}</TableCell>
+
                   <TableCell align="center">
                     <Box
                       sx={{
@@ -360,7 +363,6 @@ export function PostListView() {
                       </Typography>
                     </Box>
                   </TableCell>
-                  <TableCell align="center">{config.emailAddress ? 'Email' : 'Domain'}</TableCell>
                   <TableCell align="right">
                     {config.emailDomain && (
                       <IconButton

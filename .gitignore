@@ -1042,3 +1042,6 @@ node_modules
 .yarn/cache/yoga-layout-npm-2.0.1-d25883a49a-65a83b1bf0.zip
 .yarn/cache/zod-npm-3.23.8-11c49c85b5-15949ff821.zip
 .yarn/cache/zwitch-npm-2.0.4-13220031e2-f22ec5fc2d.zip
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat
