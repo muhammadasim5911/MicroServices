@@ -38,6 +38,7 @@ export const endpoints = {
     filterCount: '/company-users/get-filter-count',
   },
   configurations: {
+    checkVerificationStatus: '/configuration/email/check-verification-status',
     verifiedEmails: '/configuration/email/verified-addresses',
     configuration: '/configuration',
     emailCreation: '/configuration/email/address',

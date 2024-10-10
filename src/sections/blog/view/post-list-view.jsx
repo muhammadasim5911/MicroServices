@@ -117,6 +117,8 @@ export function PostListView() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [configToDelete, setConfigToDelete] = useState(null);
   const [activeTab, setActiveTab] = useState(0);
+  const [domainDetailsOpen, setDomainDetailsOpen] = useState(false);
+  const [selectedDomain, setSelectedDomain] = useState(null);
 
   const {
     register,
@@ -178,11 +180,26 @@ export function PostListView() {
     setActiveStep((prevStep) => prevStep - 1);
   };
 
-  const handleVerificationComplete = () => {
-    console.log('Verification completed');
-
-    handleRefresh();
+  const handleVerificationComplete = async () => {
+    // setDomainDetailsOpen(false);
     handleCloseDialog();
+
+    await mutate(endpoints.configurations.configuration);
+    // try {
+    //   // Implement the logic to verify the domain
+    //   const result = await verifyDomain({ emailDomain: selectedDomain.emailDomain });
+    //   if (result.isVerified) {
+    //     toast.success('Domain verified successfully');
+    //     // Refresh the configurations
+    //     await mutate(endpoints.configurations.configuration);
+    //     setDomainDetailsOpen(false);
+    //   } else {
+    //     toast.error('Domain verification failed. Please check your DNS settings and try again.');
+    //   }
+    // } catch (error) {
+    //   console.error('Verification failed:', error);
+    //   toast.error('An error occurred during verification. Please try again.');
+    // }
   };
 
   const handleCopy = (text, field) => {
@@ -249,6 +266,13 @@ export function PostListView() {
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
+  };
+
+  const handleViewDetails = (config) => {
+    if (config.emailDomain) {
+      setSelectedDomain(config);
+      setDomainDetailsOpen(true);
+    }
   };
 
   return (
@@ -338,13 +362,15 @@ export function PostListView() {
                   </TableCell>
                   <TableCell align="center">{config.emailAddress ? 'Email' : 'Domain'}</TableCell>
                   <TableCell align="right">
-                    <IconButton
-                      color="default"
-                      size="small"
-                      onClick={() => handleViewDetails(config)}
-                    >
-                      <VisibilityIcon sx={{ color: 'text.secondary' }} />
-                    </IconButton>
+                    {config.emailDomain && (
+                      <IconButton
+                        color="default"
+                        size="small"
+                        onClick={() => handleViewDetails(config)}
+                      >
+                        <VisibilityIcon sx={{ color: 'text.secondary' }} />
+                      </IconButton>
+                    )}
                     <IconButton onClick={() => handleOpenDeleteModal(config)}>
                       <DeleteIcon />
                     </IconButton>
@@ -541,9 +567,111 @@ export function PostListView() {
           <Button variant="contained" onClick={() => setDeleteModalOpen(false)}>
             Cancel
           </Button>
-          <Button variant="contained" onClick={handleDelete} color="error" autoFocus>
+          <Button variant="outlined" onClick={handleDelete} color="error" autoFocus>
             Yes, Delete
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={domainDetailsOpen}
+        onClose={() => setDomainDetailsOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Domain Details</DialogTitle>
+        <DialogContent>
+          {selectedDomain && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Typography variant="body1">Domain: {selectedDomain.emailDomain}</Typography>
+              <Typography variant="body1">
+                Status: {selectedDomain.isVerified ? 'Verified' : 'Unverified'}
+              </Typography>
+              {selectedDomain.dnsInfo && (
+                <TableContainer
+                  component={Paper}
+                  sx={{ boxShadow: 'none', border: '1px solid rgba(224, 224, 224, 1)' }}
+                >
+                  <Table size="small">
+                    <TableBody>
+                      <TableRow>
+                        <TableCell
+                          component="th"
+                          scope="row"
+                          sx={{ fontWeight: 'bold', width: '20%', borderBottom: 'none' }}
+                        >
+                          Name
+                        </TableCell>
+                        <TableCell sx={{ borderBottom: 'none' }}>
+                          <Box display="flex" alignItems="center" flexWrap="wrap">
+                            <Typography variant="body2" sx={{ mr: 1, wordBreak: 'break-all' }}>
+                              {selectedDomain.dnsInfo.Name}
+                            </Typography>
+                            <Tooltip
+                              title={copiedField === 'name' ? 'Copied!' : 'Copy to clipboard'}
+                            >
+                              <IconButton
+                                onClick={() => handleCopy(selectedDomain.dnsInfo.Name, 'name')}
+                                size="small"
+                              >
+                                <ContentCopyIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell
+                          component="th"
+                          scope="row"
+                          sx={{ fontWeight: 'bold', width: '20%', borderBottom: 'none' }}
+                        >
+                          Type
+                        </TableCell>
+                        <TableCell sx={{ borderBottom: 'none' }}>
+                          {selectedDomain.dnsInfo.Type}
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell
+                          component="th"
+                          scope="row"
+                          sx={{ fontWeight: 'bold', width: '20%', borderBottom: 'none' }}
+                        >
+                          Value
+                        </TableCell>
+                        <TableCell sx={{ borderBottom: 'none' }}>
+                          <Box display="flex" alignItems="center" flexWrap="wrap">
+                            <Typography variant="body2" sx={{ mr: 1, wordBreak: 'break-all' }}>
+                              {selectedDomain.dnsInfo.Value}
+                            </Typography>
+                            <Tooltip
+                              title={copiedField === 'value' ? 'Copied!' : 'Copy to clipboard'}
+                            >
+                              <IconButton
+                                onClick={() => handleCopy(selectedDomain.dnsInfo.Value, 'value')}
+                                size="small"
+                              >
+                                <ContentCopyIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDomainDetailsOpen(false)}>Close</Button>
+          {selectedDomain && !selectedDomain.isVerified && (
+            <Button onClick={handleVerificationComplete} variant="contained">
+              I have added
+            </Button>
+          )}
         </DialogActions>
       </Dialog>
     </DashboardContent>
